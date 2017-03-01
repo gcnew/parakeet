@@ -4,11 +4,18 @@ export {
     Parser, ParserStream,
 
     /* combinators */
-    parseMap, parseMany,
+    parseMap, parseMapError, parseMany,
 
-    parseAlt, parseAlt3, parseAltUnsafe,
+    parseMaybe, parseTry, parseSatisfy,
+
+    parseConst, parseFail,
+
+    parseAlt, parseAlt3, parseAltUnsafe, parseChoice,
 
     parseCombine, parseCombine3, parseCombine4, parseCombineUnsafe,
+
+    /* monadic binds */
+    parseRecover, parseInspect,
 
     /* Auxiliary types */
     Left, Right, Either,
@@ -46,7 +53,7 @@ function right<R>(value: R): Right<R> {
     return { kind: 'right', value };
 }
 
-function pair<F, S>(fst: F, snd: S): [F, S] {
+function pair<F extends boolean|string|number|null|undefined|object, S>(fst: F, snd: S): [F, S] {
     return [fst, snd];
 }
 
@@ -86,6 +93,19 @@ export const parseEos: Parser<never, EosExpected, void> = (st) => {
     return right(pair(undefined, st));
 };
 
+function parseConst<T>(x: T): Parser<never, never, T> {
+    return (st) => {
+        return right(pair(x, st));
+    };
+}
+
+function parseFail<E>(e: E): Parser<never, E, never> {
+    const error = left(e);
+    return (_) => {
+        return error;
+    };
+}
+
 function parseAlt<S, E, A, B>(p1: Parser<S, {}, A>, p2: Parser<S, E, B>): Parser<S, E, A|B> {
     return (st) => {
         const r1 = p1(st);
@@ -101,7 +121,7 @@ function parseAlt3<S, E, A, B, C>(p1: Parser<S, {}, A>, p2: Parser<S, {}, B>, p3
     return parseAltUnsafe([ p1, p2, p3 ]);
 }
 
-function parseAltUnsafe<S, E>(parsers: Parser<S, any, any>[]): Parser<S, any, any> {
+function parseAltUnsafe<S>(parsers: Parser<S, any, any>[]): Parser<S, any, any> {
     if (!parsers.length) {
         throw new Error('No parsers provided');
     }
@@ -149,6 +169,10 @@ function parseCombine4<S, E1, E2, E3, E4, A, B, C, D, F>(
 }
 
 function parseCombineUnsafe<S>(parsers: Parser<S, any, any>[], f: (...values: any[]) => any): Parser<S, any, any> {
+    if (!parsers.length) {
+        throw new Error('No parsers provided');
+    }
+
     return (st) => {
         let cur = st;
         const results: any[] = [];
@@ -184,5 +208,89 @@ function parseMany<S, E, A>(p: Parser<S, E, A>): Parser<S, never, A[]> {
         }
 
         return ret(results, cur);
+    };
+}
+
+function parseMaybe<S, A>(p1: Parser<S, {}, A>): Parser<S, never, A|undefined> {
+    return (st) => {
+        const res = p1(st);
+
+        if (res.kind === 'left') {
+            return right(pair(undefined, st));
+        }
+
+        return res;
+    };
+}
+
+function parseTry<S, E1, E2, A, B, C>(p1: Parser<S, E1, A>, p2: Parser<S, E2, B>, f: (a: A, b: B) => C): Parser<S, E2, C|undefined> {
+    return (st) => {
+        const res = p1(st);
+
+        if (res.kind === 'left') {
+            return right(pair(undefined, st));
+        }
+
+        const res2 = p2(res.value[1]);
+        if (res2.kind === 'left') {
+            return res2;
+        }
+
+        return right(pair(f(res.value[0], res2.value[0]), res2.value[1]));
+    };
+}
+
+function parseRecover<S, E1, E2, A, B>(p1: Parser<S, E1, A>, f: (e: E1) => Parser<S, E2, B>): Parser<S, E2, A | B> {
+    return (st) => {
+        const res = p1(st);
+        if (res.kind === 'right') {
+            return res;
+        }
+
+        return f(res.value)(st);
+    };
+}
+
+function parseInspect<S, E1, E2, A, B>(p1: Parser<S, E1, A>, f: (e: A) => Parser<S, E2, B>): Parser<S, E1 | E2, B> {
+    return (st) => {
+        const res = p1(st);
+        if (res.kind === 'left') {
+            return res;
+        }
+
+        return f(res.value[0])(st);
+    };
+}
+
+function parseSatisfy<S, E>(f: (x: S) => boolean, e: E): Parser<S, E, S> {
+    const error = left(e);
+    return (st) => {
+        const res = st.next();
+        if (!res || !f(res[0])) {
+            return error;
+        }
+
+        return right(res);
+    };
+}
+
+function parseChoice<S, E1, E2, T>(parsers: [Parser<S, E1, {}>, Parser<S, E2, T>][]): Parser<S, E1 | E2, T> {
+    if (!parsers.length) {
+        throw new Error('No parsers provided');
+    }
+
+    return (st) => {
+        let ret;
+        for (const pair of parsers) {
+            const res = pair[0](st);
+
+            if (res.kind === 'right') {
+                return pair[1](res.value[1]);
+            }
+
+            ret = res;
+        }
+
+        return ret!;
     };
 }

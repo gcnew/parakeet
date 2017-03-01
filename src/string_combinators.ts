@@ -1,19 +1,24 @@
 
-import { Parser, Left, left, right, pair } from './parser_combinators'
+import { Parser, left, right, pair } from './parser_combinators'
 import {
     parseCombine as combine,
     parseCombine3 as combine3,
     parseMany as many,
-    parseAlt  as alt,
-    choice as genericChoice
+    parseChoice as genericChoice,
+    parseTry as trai,
+    parseSatisfy as satisfy
 }  from './parser_combinators'
 
-export { StringParser }
+export {
+    StringParser, StringParserError,
+
+    anyOf, choice, string
+}
 
 export type char = string;
 type StringParser<E, T> = Parser<char, E, T>
 
-const StaticErrors: { [key in SimpleParserError]: Left<{ kind: 'pc_error', code: key }> } = {
+const StaticErrors: { [key in SimpleParserError]: { kind: 'pc_error', code: key } } = {
     digit_expected:         mkSimpleError('digit_expected'),
     whitespace_expected:    mkSimpleError('whitespace_expected'),
     underscore_expected:    mkSimpleError('underscore_expected'),
@@ -21,7 +26,7 @@ const StaticErrors: { [key in SimpleParserError]: Left<{ kind: 'pc_error', code:
     ascii_id_char_expected: mkSimpleError('ascii_id_char_expected'),
 };
 
-type StringParserError = typeof StaticErrors[SimpleParserError]['value']
+type StringParserError = typeof StaticErrors[SimpleParserError]
                        | StringMismatch
                        | CharNotExpected
 
@@ -62,9 +67,10 @@ export const float = combine3(
     (i1, _, i2) => i1 + '.' + i2
 );
 
-export const number = alt(
-    float,
-    integer
+export const number = combine(
+    integer,
+    trai(char('.'), integer, (_, i) => '.' + i),
+    (w, f) => w + (f || '')
 );
 
 function string<S extends string>(s: S): StringParser<StringMismatch, S> {
@@ -121,11 +127,10 @@ function anyOf(s: char): StringParser<CharNotExpected, char> {
 }
 
 // function choice<T, M extends { [key: string]: StringParser<any, T> }>(map: M): StringParser<M[keyof M]['e'] | StringMismatch, T> {
-
-const ll = choice({
-    num: number,
-    str: string('hello')
-});
+// const ll = choice({
+//     num: number,
+//     str: string('hello')
+// });
 
 function choice<E, T>(map: { [key: string]: StringParser<E, T> }): StringParser<E | StringMismatch, T> {
     const keys = Object.keys(map).sort().reverse();
@@ -163,21 +168,9 @@ function isAsciiIdChar(s: char) {
 }
 
 function mkSimpleError<T extends string>(code: T) {
-    return left({ kind: 'pc_error' as 'pc_error', code });
+    return { kind: 'pc_error' as 'pc_error', code };
 }
 
-function charParser<T extends StringParserError>(pred: (x: char) => boolean, error: Left<T>): StringParser<T, char> {
-    return (st) => {
-        const next = st.next();
-
-        if (!next || !isWhiteSpace(next[0])) {
-            return error;
-        }
-
-        return right(next);
-    };
-}
-
-function flipConst<T>(_: {}, x: T): T {
-    return x;
+function charParser<T extends StringParserError>(pred: (x: char) => boolean, error: T): StringParser<T, char> {
+    return satisfy(pred, error);
 }
