@@ -29,14 +29,6 @@ type Right<R> = { kind: 'right', value: R }
 
 type Either<L, R> = Left<L> | Right<R>
 
-// type List<T> = { kind: 'cons', head: T, rest: List<T> }
-//              | { kind: 'nil' }
-
-// interface ParserStream<S> {
-//     next(this: this): [S, this];
-// }
-
-
 type ParserStream<S> = {
     next(this: ParserStream<S>): [S, ParserStream<S>]|null;
 }
@@ -273,6 +265,26 @@ function parseSatisfy<S, E>(f: (x: S) => boolean, e: E): Parser<S, E, S> {
         return right(res);
     };
 }
+
+function parseChoice<S, E1, E2, E3, E4, T1, T2>(parsers: [
+    [Parser<S, E1, {}>, Parser<S, E2, T1>],
+    [Parser<S, E3, {}>, Parser<S, E4, T2>]
+]): Parser<S, E1 | E2 | E3 | E4, T1 | T2>;
+
+function parseChoice<S, E1, E2, E3, E4, E5, E6, T1, T2, T3>(parsers: [
+    [Parser<S, E1, {}>, Parser<S, E2, T1>],
+    [Parser<S, E3, {}>, Parser<S, E4, T2>],
+    [Parser<S, E5, {}>, Parser<S, E6, T3>]
+]): Parser<S, E1 | E2 | E3, T1 | T2 | T3>;
+
+function parseChoice<S, E1, E2, E3, E4, E5, E6, E7, E8, T1, T2, T3, T4>(parsers: [
+    [Parser<S, E1, {}>, Parser<S, E2, T1>],
+    [Parser<S, E3, {}>, Parser<S, E4, T2>],
+    [Parser<S, E5, {}>, Parser<S, E6, T3>],
+    [Parser<S, E7, {}>, Parser<S, E8, T4>]
+]): Parser<S, E1 | E2 | E3 | E4, T1 | T2 | T3 | T4>;
+
+function parseChoice<S, E1, E2, T>(parsers: [Parser<S, E1, {}>, Parser<S, E2, T>][]): Parser<S, E1 | E2, T>;
 
 function parseChoice<S, E1, E2, T>(parsers: [Parser<S, E1, {}>, Parser<S, E2, T>][]): Parser<S, E1 | E2, T> {
     if (!parsers.length) {

@@ -126,19 +126,8 @@ function anyOf(s: char): StringParser<CharNotExpected, char> {
     };
 }
 
-// function choice<T, M extends { [key: string]: StringParser<any, T> }>(map: M): StringParser<M[keyof M]['e'] | StringMismatch, T> {
-// const ll = choice({
-//     num: number,
-//     str: string('hello')
-// });
-
 function choice<E, T>(map: { [key: string]: StringParser<E, T> }): StringParser<E | StringMismatch, T> {
     const keys = Object.keys(map).sort().reverse();
-
-    if (!keys.length) {
-        throw new Error('Empty object');
-    }
-
     return genericChoice(keys.map(k => pair(string(k), map[k])));
 }
 
