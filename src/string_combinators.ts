@@ -1,6 +1,7 @@
 
 import { Parser, left, right, pair } from './parser_combinators'
 import {
+    ParserStream,
     parseCombine as combine,
     parseCombine3 as combine3,
     parseMany as many,
@@ -10,13 +11,19 @@ import {
 }  from './parser_combinators'
 
 export {
-    StringParser, StringParserError,
+    TextStream, StringParser, StringParserError,
 
     anyOf, choice, string
 }
 
 export type char = string;
-type StringParser<E, T> = Parser<char, E, T>
+
+interface TextStream extends ParserStream<char> {
+    getPosition(this: this): number,
+    getLineCol(this: this, pos: number): [number, number]
+}
+
+type StringParser<E, T> = Parser<char, E, T, TextStream>
 
 const StaticErrors: { [key in SimpleParserError]: { kind: 'pc_error', code: key } } = {
     digit_expected:         mkSimpleError('digit_expected'),
@@ -160,6 +167,6 @@ function mkSimpleError<T extends string>(code: T) {
     return { kind: 'pc_error' as 'pc_error', code };
 }
 
-function charParser<T extends StringParserError>(pred: (x: char) => boolean, error: T): StringParser<T, char> {
-    return satisfy(pred, error);
+function charParser<E extends StringParserError>(pred: (x: char) => boolean, error: E): StringParser<E, char> {
+    return satisfy<char, E, TextStream>(pred, error);
 }

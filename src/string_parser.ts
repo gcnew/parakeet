@@ -1,10 +1,11 @@
 
-import { ParserStream, pair } from './parser_combinators'
+import { pair } from './parser_combinators'
+import { TextStream } from './string_combinators'
 
 export { CharStream }
 
 
-class CharStream implements ParserStream<string> {
+class CharStream implements TextStream {
     constructor(
         private source: string,
         private offset: number
