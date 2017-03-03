@@ -23,7 +23,7 @@ interface TextStream extends ParserStream<char> {
     getLineCol(this: this, pos: number): [number, number]
 }
 
-type StringParser<E, T> = Parser<char, E, T, TextStream>
+type StringParser<E, T> = Parser<char, TextStream, E, T>
 
 const StaticErrors: { [key in SimpleParserError]: { kind: 'pc_error', code: key } } = {
     digit_expected:         mkSimpleError('digit_expected'),
@@ -168,5 +168,5 @@ function mkSimpleError<T extends string>(code: T) {
 }
 
 function charParser<E extends StringParserError>(pred: (x: char) => boolean, error: E): StringParser<E, char> {
-    return satisfy<char, E, TextStream>(pred, error);
+    return satisfy<char, TextStream, E>(pred, error);
 }

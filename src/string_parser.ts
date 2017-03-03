@@ -12,11 +12,27 @@ class CharStream implements TextStream {
     ) {
     }
 
+    protected newInstance(source: string, offset: number): this {
+        return new CharStream(source, offset) as this;
+    }
+
     next() {
         if (this.offset >= this.source.length) {
             return null;
         }
 
-        return pair(this.source[this.offset], new CharStream(this.source, this.offset + 1));
+        return pair(
+            this.source[this.offset],
+            this.newInstance(this.source, this.offset + 1)
+        );
+    }
+
+    getPosition() {
+        return this.offset;
+    }
+
+    getLineCol(offset: number) {
+        // TODO: ...
+        return null as any;
     }
 }
