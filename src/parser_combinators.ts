@@ -10,7 +10,7 @@ export {
 
     parseConst, parseFail,
 
-    parseAlt, parseAlt3, parseAltUnsafe, parseChoice,
+    parseAlt, parseAlt3, parseAlt4, parseAltUnsafe, parseChoice,
 
     parseCombine, parseCombine3, parseCombine4, parseCombineUnsafe,
 
@@ -73,7 +73,7 @@ function parseMapError<M, S extends ParserStream<M>, E1, E2, T>(p: Parser<M, S, 
 
 const eosExpected = left({ kind: 'pc_error', code: 'eos_expected' } as EosExpected);
 
-export const parseEos: Parser<never, ParserStream<never>, EosExpected, void> = (st) => {
+export const parseEos: Parser<{}, ParserStream<{}>, EosExpected, void> = (st) => {
     if (st.next()) {
         return eosExpected;
     }
