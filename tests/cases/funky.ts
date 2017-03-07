@@ -10,7 +10,7 @@ import {
 } from '../../src/string_combinators'
 
 import {
-    map, mapError, alt3, many, maybe, pconst, combine, combine3, combine4, terminated,
+    map, mapError, alt, many, maybe, pconst, combine, terminated,
 
     oneOrMore as many1
 } from '../../src/parser_combinators'
@@ -71,12 +71,13 @@ const parseArithOp = choice({
 });
 
 // FunctionDecl = Id (' ' Id)* '=' Expr ';'
-const parseFunctionDecl = combine4(
-    asciiId,                                                                              // name
-    many(combine(parseWs, asciiId, (_, id) => id)),                                       // params
-    combine4(skipWs, char('='), skipWs, st => parseExpr(st), (_1, _2, _3, body) => body), // body
+const parseFunctionDecl = combine([
+        asciiId,                                                                                 // name
+        many(combine([ parseWs, asciiId ], (_, id) => id)),                                      // params
+        combine([ skipWs, char('='), skipWs, st => parseExpr(st) ], (_1, _2, _3, body) => body), // body
 
-    mapError(combine(skipWs, char(';'), x => x), _ => ({ kind: 'pc_error' as 'pc_error', message: 'Did you forget `;` ?' })),
+        mapError(combine([ skipWs, char(';') ], x => x), _ => ({ kind: 'pc_error' as 'pc_error', message: 'Did you forget `;` ?' }))
+    ],
 
     mkFunctionDecl
 );
@@ -84,36 +85,40 @@ const parseFunctionDecl = combine4(
 // Declartion = FunctionDecl
 const parseDeclaration = parseFunctionDecl;
 
-const parseAtom = alt3(
+const parseAtom = alt([
     parseConstant,
     parseVar,
-    combine3(
-        combine(char('('), skipWs, _ => _),
-        st => parseExpr(st),
-        combine(skipWs, char(')'), _ => _),
+    combine([
+            combine([ char('('), skipWs ], _ => _),
+            st => parseExpr(st),
+            combine([ skipWs, char(')') ], _ => _),
+        ],
         (_, expr) => expr
     )
-);
+]);
 
 // Application = Atom (' ' Atom)*
-const parseApplication = combine(
-    parseAtom,
-    maybe(many1(combine(parseWs, parseAtom, (_, a) => a))),
+const parseApplication = combine([
+        parseAtom,
+        maybe(many1(combine([ parseWs, parseAtom ], (_, a) => a))),
+    ],
 
     (func, args) => args ? mkApplication(func, args)
                          : func
 );
 
 // Arith = Application ('+'|'_'|'*'|'/') Arith
-const parseArith: StringParser<StringMismatch, Expr> = combine3(
-    parseApplication,
-    skipWs,
-    maybe(combine3(
-        parseArithOp,
+const parseArith: StringParser<StringMismatch, Expr> = combine([
+        parseApplication,
         skipWs,
-        st => parseArith(st),
-        (op, _, right) => ({ op, right })
-    )),
+        maybe(combine([
+                parseArithOp,
+                skipWs,
+                st => parseArith(st)
+            ],
+            (op, _, right) => ({ op, right })
+        ))
+    ],
 
     (left, _, r) => r ? mkArith(r.op, left, r.right)
                       : left
@@ -123,9 +128,10 @@ const parseArith: StringParser<StringMismatch, Expr> = combine3(
 const parseExpr = parseArith;
 
 // Program = Declaration+
-const parseProgram = terminated(combine(
-    skipWs,
-    many1(combine(parseDeclaration, skipWs, x => x)),
+const parseProgram = terminated(combine([
+        skipWs,
+        many1(combine([ parseDeclaration, skipWs ], x => x))
+    ],
     (_, decls) => mkProgram(decls)
 ));
 

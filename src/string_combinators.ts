@@ -3,7 +3,7 @@ import { Parser, left, right, pair } from './parser_combinators'
 import {
     ParserStream, Either,
 
-    combine, combine3, many, trai, satisfy, genericChoice
+    combine, many, trai, satisfy, choice as genericChoice
 }  from './parser_combinators'
 
 export {
@@ -58,28 +58,32 @@ export const asciiIdChar = charParser(isAsciiIdChar, StaticErrors.ascii_id_char_
 
 export const char = string;
 
-export const asciiId = combine(
-    asciiAlpha,
-    many(asciiIdChar),
+export const asciiId = combine([
+        asciiAlpha,
+        many(asciiIdChar)
+    ],
     (x, xs) => x + xs.join('')
 );
 
-export const integer = combine(
-    digit,
-    many(digit),
+export const integer = combine([
+        digit,
+        many(digit),
+    ],
     (x, xs) => x + xs.join('')
 );
 
-export const float = combine3(
-    integer,
-    char('.'),
-    integer,
+export const float = combine([
+        integer,
+        char('.'),
+        integer
+    ],
     (i1, _, i2) => i1 + '.' + i2
 );
 
-export const number = combine(
-    integer,
-    trai(char('.'), integer, (_, i) => '.' + i),
+export const number = combine([
+        integer,
+        trai(char('.'), integer, (_, i) => '.' + i)
+    ],
     (w, f) => w + (f || '')
 );
 

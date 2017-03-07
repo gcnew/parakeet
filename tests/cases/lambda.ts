@@ -10,7 +10,7 @@ import {
 } from '../../src/string_combinators'
 
 import {
-    map, alt, alt3, many, combine, combine3, combine4, terminated,
+    map, alt, many, combine, terminated,
 
     satisfy as psat,
     oneOrMore as many1
@@ -48,7 +48,7 @@ function lambda(param: string, body: Expr): Lambda {
 const parseWs    = many1(oneOf(' \t'));
 const parseNum   = many1(oneOf('1234567890'));
 
-const parseId    = alt(
+const parseId    = alt([
     oneOf('+-*/⊥'),
     map(
         many1(psat<char, TextStream, CharNotExpected>(
@@ -57,36 +57,38 @@ const parseId    = alt(
         )),
         parts => parts.join('')
     )
-);
+]);
 
 // Lambda = 'λ' Id '.' Expr
-const parseLambda = combine4(
-    char('λ'),
-    parseId,
-    char('.'),
-    st => parseExpr(st),
+const parseLambda = combine([
+        char('λ'),
+        parseId,
+        char('.'),
+        st => parseExpr(st)
+    ],
     (_1, param, _2, body) => lambda(param, body)
 );
 
 // ExprNoAp = Literal
 //          | Ref           -- ref <$> id
 //          | '(' Expr ')'
-const parseExprNoAp = alt3(
+const parseExprNoAp = alt([
     map(parseNum, n   => literal(+n.join(''))),
     map(parseId,  ref => reference(ref)),
-    combine3(char('('), st => parseExpr(st), char(')'), (_1, e, _2) => e)
-);
+    combine([ char('('), st => parseExpr(st), char(')') ], (_1, e, _2) => e)
+]);
 
 // Expr = Lambda
 //      | ExprNoAp (' ' ExprNoAp)*
-const parseExpr: StringParser<StringMismatch, Expr> = alt(
+const parseExpr: StringParser<StringMismatch, Expr> = alt([
     parseLambda,
-    combine(
-        parseExprNoAp,
-        many(combine(parseWs, parseExprNoAp, (_, expr) => expr)),
+    combine([
+            parseExprNoAp,
+            many(combine([ parseWs, parseExprNoAp ], (_, expr) => expr))
+        ],
         (head, rest) => rest.reduce(application, head)
     )
-);
+]);
 
 const parseProgram = terminated(parseExpr);
 
