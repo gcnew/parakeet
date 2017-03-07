@@ -1,0 +1,197 @@
+{
+    "kind": "right",
+    "value": [
+        {
+            "kind": "lambda",
+            "param": "f",
+            "body": {
+                "kind": "application",
+                "func": {
+                    "kind": "application",
+                    "func": {
+                        "kind": "application",
+                        "func": {
+                            "kind": "reference",
+                            "ref": "f"
+                        },
+                        "arg": {
+                            "kind": "lambda",
+                            "param": "x",
+                            "body": {
+                                "kind": "reference",
+                                "ref": "x"
+                            }
+                        }
+                    },
+                    "arg": {
+                        "kind": "reference",
+                        "ref": "+"
+                    }
+                },
+                "arg": {
+                    "kind": "literal",
+                    "value": 1
+                }
+            }
+        },
+        {
+            "source": "λf.f (λx.x) + 1",
+            "offset": 15,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "λf.f (λx.x) + 1"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        {
+            "kind": "application",
+            "func": {
+                "kind": "application",
+                "func": {
+                    "kind": "lambda",
+                    "param": "f",
+                    "body": {
+                        "kind": "lambda",
+                        "param": "x",
+                        "body": {
+                            "kind": "application",
+                            "func": {
+                                "kind": "reference",
+                                "ref": "f"
+                            },
+                            "arg": {
+                                "kind": "reference",
+                                "ref": "x"
+                            }
+                        }
+                    }
+                },
+                "arg": {
+                    "kind": "reference",
+                    "ref": "+"
+                }
+            },
+            "arg": {
+                "kind": "literal",
+                "value": 1
+            }
+        },
+        {
+            "source": "(λf.λx.f x) + 1",
+            "offset": 15,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "(λf.λx.f x) + 1"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "left",
+    "value": {
+        "kind": "pc_error",
+        "code": "eos_expected"
+    }
+}
+
+{
+    "kind": "right",
+    "value": [
+        {
+            "kind": "lambda",
+            "param": "x",
+            "body": {
+                "kind": "lambda",
+                "param": "xs",
+                "body": {
+                    "kind": "lambda",
+                    "param": "cc",
+                    "body": {
+                        "kind": "lambda",
+                        "param": "cn",
+                        "body": {
+                            "kind": "application",
+                            "func": {
+                                "kind": "application",
+                                "func": {
+                                    "kind": "reference",
+                                    "ref": "cc"
+                                },
+                                "arg": {
+                                    "kind": "reference",
+                                    "ref": "x"
+                                }
+                            },
+                            "arg": {
+                                "kind": "reference",
+                                "ref": "xs"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "source": "λx.λxs.λcc.λcn.cc x xs",
+            "offset": 22,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "λx.λxs.λcc.λcn.cc x xs"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        {
+            "kind": "lambda",
+            "param": "true",
+            "body": {
+                "kind": "lambda",
+                "param": "false",
+                "body": {
+                    "kind": "application",
+                    "func": {
+                        "kind": "reference",
+                        "ref": "true"
+                    },
+                    "arg": {
+                        "kind": "application",
+                        "func": {
+                            "kind": "reference",
+                            "ref": "true"
+                        },
+                        "arg": {
+                            "kind": "reference",
+                            "ref": "false"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "source": "λtrue.λfalse.true (true false)",
+            "offset": 30,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "λtrue.λfalse.true (true false)"
+                ]
+            ]
+        }
+    ]
+}

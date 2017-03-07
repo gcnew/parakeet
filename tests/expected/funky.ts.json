@@ -1,0 +1,297 @@
+{
+    "kind": "left",
+    "value": {
+        "kind": "pc_error",
+        "message": "Did you forget `;` ?"
+    }
+}
+
+{
+    "kind": "right",
+    "value": [
+        {
+            "kind": "program",
+            "body": [
+                {
+                    "kind": "function_decl",
+                    "name": "main",
+                    "params": [],
+                    "body": {
+                        "kind": "arith",
+                        "op": "add",
+                        "left": {
+                            "kind": "constant",
+                            "value": 3
+                        },
+                        "right": {
+                            "kind": "constant",
+                            "value": 4
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "source": "main = 3 + 4;",
+            "offset": 13,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "main = 3 + 4;"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        {
+            "kind": "program",
+            "body": [
+                {
+                    "kind": "function_decl",
+                    "name": "f",
+                    "params": [
+                        "x",
+                        "y"
+                    ],
+                    "body": {
+                        "kind": "arith",
+                        "op": "mul",
+                        "left": {
+                            "kind": "var",
+                            "name": "x"
+                        },
+                        "right": {
+                            "kind": "var",
+                            "name": "y"
+                        }
+                    }
+                },
+                {
+                    "kind": "function_decl",
+                    "name": "main",
+                    "params": [],
+                    "body": {
+                        "kind": "arith",
+                        "op": "add",
+                        "left": {
+                            "kind": "application",
+                            "func": {
+                                "kind": "var",
+                                "name": "f"
+                            },
+                            "args": [
+                                {
+                                    "kind": "constant",
+                                    "value": 4
+                                },
+                                {
+                                    "kind": "constant",
+                                    "value": 5
+                                }
+                            ]
+                        },
+                        "right": {
+                            "kind": "constant",
+                            "value": 11
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "source": "f x y = x * y; main = f 4 5 + 11;",
+            "offset": 33,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "f x y = x * y; main = f 4 5 + 11;"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        {
+            "kind": "program",
+            "body": [
+                {
+                    "kind": "function_decl",
+                    "name": "c",
+                    "params": [],
+                    "body": {
+                        "kind": "constant",
+                        "value": 9
+                    }
+                },
+                {
+                    "kind": "function_decl",
+                    "name": "main",
+                    "params": [],
+                    "body": {
+                        "kind": "var",
+                        "name": "c"
+                    }
+                }
+            ]
+        },
+        {
+            "source": "c = 9; main = c;",
+            "offset": 16,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "c = 9; main = c;"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        {
+            "kind": "program",
+            "body": [
+                {
+                    "kind": "function_decl",
+                    "name": "c",
+                    "params": [],
+                    "body": {
+                        "kind": "constant",
+                        "value": 42
+                    }
+                },
+                {
+                    "kind": "function_decl",
+                    "name": "f",
+                    "params": [
+                        "x"
+                    ],
+                    "body": {
+                        "kind": "arith",
+                        "op": "sub",
+                        "left": {
+                            "kind": "var",
+                            "name": "x"
+                        },
+                        "right": {
+                            "kind": "var",
+                            "name": "c"
+                        }
+                    }
+                },
+                {
+                    "kind": "function_decl",
+                    "name": "main",
+                    "params": [],
+                    "body": {
+                        "kind": "arith",
+                        "op": "add",
+                        "left": {
+                            "kind": "application",
+                            "func": {
+                                "kind": "var",
+                                "name": "f"
+                            },
+                            "args": [
+                                {
+                                    "kind": "constant",
+                                    "value": 29
+                                }
+                            ]
+                        },
+                        "right": {
+                            "kind": "var",
+                            "name": "c"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "source": "c = 42; f x = x - c; main = f 29 + c;",
+            "offset": 37,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "c = 42; f x = x - c; main = f 29 + c;"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        {
+            "kind": "program",
+            "body": [
+                {
+                    "kind": "function_decl",
+                    "name": "x",
+                    "params": [],
+                    "body": {
+                        "kind": "constant",
+                        "value": 20
+                    }
+                },
+                {
+                    "kind": "function_decl",
+                    "name": "f",
+                    "params": [
+                        "x"
+                    ],
+                    "body": {
+                        "kind": "arith",
+                        "op": "sub",
+                        "left": {
+                            "kind": "var",
+                            "name": "x"
+                        },
+                        "right": {
+                            "kind": "constant",
+                            "value": 9
+                        }
+                    }
+                },
+                {
+                    "kind": "function_decl",
+                    "name": "main",
+                    "params": [],
+                    "body": {
+                        "kind": "application",
+                        "func": {
+                            "kind": "var",
+                            "name": "f"
+                        },
+                        "args": [
+                            {
+                                "kind": "constant",
+                                "value": 10
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "source": "x = 20; f x = x - 9; main = f 10;",
+            "offset": 33,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "x = 20; f x = x - 9; main = f 10;"
+                ]
+            ]
+        }
+    ]
+}

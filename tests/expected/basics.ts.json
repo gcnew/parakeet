@@ -1,0 +1,91 @@
+{
+    "kind": "right",
+    "value": [
+        "hello",
+        {
+            "source": "strhello",
+            "offset": 8,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "strhello"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        "hello",
+        {
+            "source": "strhello world",
+            "offset": 8,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "strhello world"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        123,
+        {
+            "source": "123abc",
+            "offset": 3,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "123abc"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        {
+            "line": 3,
+            "col": 1,
+            "value": "123"
+        },
+        {
+            "source": "\n\n123",
+            "offset": 5,
+            "lineOffsetTable": [
+                [
+                    0,
+                    ""
+                ],
+                [
+                    1,
+                    ""
+                ],
+                [
+                    2,
+                    "123"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "left",
+    "value": {
+        "line": 3,
+        "col": 4,
+        "value": {
+            "kind": "pc_error",
+            "code": "digit_expected"
+        }
+    }
+}
