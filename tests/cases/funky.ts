@@ -70,7 +70,7 @@ const parseArithOp = choice({
     "/": pconst<'div'>('div')
 });
 
-// FunctionDecl = Id (' ' Id)* '=' Expr
+// FunctionDecl = Id (' ' Id)* '=' Expr ';'
 const parseFunctionDecl = combine4(
     asciiId,                                                                              // name
     many(combine(parseWs, asciiId, (_, id) => id)),                                       // params
