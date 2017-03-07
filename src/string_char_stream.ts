@@ -88,5 +88,5 @@ function binarySearch<T>(arr: T[], compare: (x: T) => -1|0|1): false|number {
         return m;
     }
 
-    return low;
+    return -low;
 }
