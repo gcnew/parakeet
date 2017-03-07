@@ -29,6 +29,8 @@ type Right<R> = { kind: 'right', value: R }
 
 type Either<L, R> = Left<L> | Right<R>
 
+type Literal = boolean | string | number | null | undefined | object;
+
 interface ParserStream<S> {
     next(this: this): [S, this]|null;
 }
@@ -45,7 +47,7 @@ function right<R>(value: R): Right<R> {
     return { kind: 'right', value };
 }
 
-function pair<F extends boolean|string|number|null|undefined|object, S>(fst: F, snd: S): [F, S] {
+function pair<F extends Literal, S>(fst: F, snd: S): [F, S] {
     return [fst, snd];
 }
 
@@ -85,13 +87,13 @@ function parseTerminated<M, S extends ParserStream<M>, E, T>(p: Parser<M, S, E, 
     return parseCombine(p, parseEos, x => x);
 }
 
-function parseConst<T>(x: T) {
+function parseConst<T extends Literal>(x: T) {
     return <S>(st: S): Either<never, [T, S]> => {
         return right(pair(x, st));
     };
 }
 
-function parseFail<E>(e: E) {
+function parseFail<E extends Literal>(e: E) {
     const error = left(e);
     return <S>(_: S): Either<E, never> => {
         return error;
