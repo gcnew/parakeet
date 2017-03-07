@@ -4,11 +4,11 @@ export {
     Parser, ParserStream,
 
     /* combinators */
-    parseMap, parseMapError, parseMany,
+    parseMap, parseMapError, parseMany, parseOneOrMore,
 
     parseMaybe, parseTry, parseSatisfy,
 
-    parseConst, parseFail,
+    parseEos, parseTerminated, parseConst, parseFail,
 
     parseAlt, parseAlt3, parseAlt4, parseAltUnsafe, parseChoice,
 
@@ -73,23 +73,27 @@ function parseMapError<M, S extends ParserStream<M>, E1, E2, T>(p: Parser<M, S, 
 
 const eosExpected = left({ kind: 'pc_error', code: 'eos_expected' } as EosExpected);
 
-export const parseEos: Parser<{}, ParserStream<{}>, EosExpected, void> = (st) => {
+function parseEos<S extends ParserStream<{}>>(st: S): Either<EosExpected, [undefined, S]> {
     if (st.next()) {
         return eosExpected;
     }
 
     return right(pair(undefined, st));
-};
+}
 
-function parseConst<T>(x: T): Parser<never, never, never, T> {
-    return (st) => {
+function parseTerminated<M, S extends ParserStream<M>, E, T>(p: Parser<M, S, E, T>) {
+    return parseCombine(p, parseEos, x => x);
+}
+
+function parseConst<T>(x: T) {
+    return <S>(st: S): Either<never, [T, S]> => {
         return right(pair(x, st));
     };
 }
 
-function parseFail<E>(e: E): Parser<never, never, E, never> {
+function parseFail<E>(e: E) {
     const error = left(e);
-    return (_) => {
+    return <S>(_: S): Either<E, never> => {
         return error;
     };
 }
@@ -198,7 +202,7 @@ function parseCombineUnsafe<M, S extends ParserStream<M>>(
     };
 }
 
-function parseMany<M, S extends ParserStream<M>, E, A>(p: Parser<M, S, E, A>): Parser<M, S, never, A[]> {
+function parseMany<M, S extends ParserStream<M>, A>(p: Parser<M, S, {}, A>): Parser<M, S, never, A[]> {
     return (st) => {
         let cur = st;
         const results: A[] = [];
@@ -216,6 +220,10 @@ function parseMany<M, S extends ParserStream<M>, E, A>(p: Parser<M, S, E, A>): P
 
         return right(pair(results, cur));
     };
+}
+
+function parseOneOrMore<M, S extends ParserStream<M>, E, A>(p: Parser<M, S, E, A>): Parser<M, S, E, A[]> {
+    return parseCombine(p, parseMany(p), (x, xs) => (xs.unshift(x), xs));
 }
 
 function parseMaybe<M, S extends ParserStream<M>, A>(p1: Parser<M, S, {}, A>): Parser<M, S, never, A|undefined> {

@@ -11,9 +11,11 @@ import {
 }  from './parser_combinators'
 
 export {
-    TextStream, StringParser, StringParserError,
+    TextStream, StringParser,
 
-    anyOf, choice, string
+    StringParserError, StringMismatch, CharNotExpected,
+
+    oneOf, choice, string
 }
 
 export type char = string;
@@ -109,7 +111,7 @@ function string<S extends string>(s: S): StringParser<StringMismatch, S> {
     };
 }
 
-function anyOf(s: char): StringParser<CharNotExpected, char> {
+function oneOf(s: char): StringParser<CharNotExpected, char> {
     if (!s.length) {
         throw new Error('Empty string');
     }
