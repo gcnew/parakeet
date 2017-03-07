@@ -10,17 +10,9 @@ import {
 } from '../../src/string_combinators'
 
 import {
-    parseMap as map,
-    parseMapError as mapError,
-    parseAlt3 as alt3,
-    parseMany as many,
-    parseMaybe as maybe,
-    parseConst as pconst,
-    parseOneOrMore as many1,
-    parseCombine as combine,
-    parseCombine3 as combine3,
-    parseCombine4 as combine4,
-    parseTerminated as terminated,
+    map, mapError, alt3, many, maybe, pconst, combine, combine3, combine4, terminated,
+
+    oneOrMore as many1
 } from '../../src/parser_combinators'
 
 

@@ -10,16 +10,10 @@ import {
 } from '../../src/string_combinators'
 
 import {
-    parseMap as map,
-    parseAlt as alt,
-    parseAlt3 as alt3,
-    parseSatisfy as psat,
-    parseMany as many,
-    parseOneOrMore as many1,
-    parseCombine as combine,
-    parseCombine3 as combine3,
-    parseCombine4 as combine4,
-    parseTerminated as terminated,
+    map, alt, alt3, many, combine, combine3, combine4, terminated,
+
+    satisfy as psat,
+    oneOrMore as many1
 } from '../../src/parser_combinators'
 
 

@@ -8,16 +8,13 @@ import {
 } from '../../src/string_combinators'
 
 import {
-    parseMap as map,
-    parseMany as many,
-    parseCombine as combine,
-    parseChoice as genericChoice,
+    map, many, combine, choice
 } from '../../src/parser_combinators'
 
-const ll = genericChoice([
+const ll = choice(
     [ string('num'), map(number, n => Number(n)) ],
     [ string('str'), string('hello') ]
-]);
+);
 
 const nn = map(number, x => +x);
 

@@ -2,12 +2,8 @@
 import { Parser, left, right, pair } from './parser_combinators'
 import {
     ParserStream, Either,
-    parseCombine as combine,
-    parseCombine3 as combine3,
-    parseMany as many,
-    parseChoice as genericChoice,
-    parseTry as trai,
-    parseSatisfy as satisfy
+
+    combine, combine3, many, trai, satisfy, genericChoice
 }  from './parser_combinators'
 
 export {
