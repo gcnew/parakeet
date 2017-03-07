@@ -58,33 +58,33 @@ export const asciiIdChar = charParser(isAsciiIdChar, StaticErrors.ascii_id_char_
 
 export const char = string;
 
-export const asciiId = combine([
-        asciiAlpha,
-        many(asciiIdChar)
-    ],
-    (x, xs) => x + xs.join('')
+export const asciiId = combine(
+    (x, xs) => x + xs.join(''),
+
+    asciiAlpha,
+    many(asciiIdChar)
 );
 
-export const integer = combine([
-        digit,
-        many(digit),
-    ],
-    (x, xs) => x + xs.join('')
+export const integer = combine(
+    (x, xs) => x + xs.join(''),
+
+    digit,
+    many(digit)
 );
 
-export const float = combine([
-        integer,
-        char('.'),
-        integer
-    ],
-    (i1, _, i2) => i1 + '.' + i2
+export const float = combine(
+    (i1, _, i2) => i1 + '.' + i2,
+
+    integer,
+    char('.'),
+    integer
 );
 
-export const number = combine([
-        integer,
-        trai(char('.'), integer, (_, i) => '.' + i)
-    ],
-    (w, f) => w + (f || '')
+export const number = combine(
+    (w, f) => w + (f || ''),
+
+    integer,
+    trai(char('.'), integer, (_, i) => '.' + i)
 );
 
 function string<S extends string>(s: S): StringParser<StringMismatch, S> {
@@ -145,7 +145,7 @@ function oneOf(s: char): StringParser<CharNotExpected, char> {
 
 function choice<E, T>(map: { [key: string]: StringParser<E, T> }): StringParser<E | StringMismatch, T> {
     const keys = Object.keys(map).sort().reverse();
-    return genericChoice(keys.map(k => pair(string(k), map[k])));
+    return genericChoice(... keys.map(k => pair(string(k), map[k])));
 }
 
 function position<S extends TextStream>(st: S): Either<never, [number, S]> {

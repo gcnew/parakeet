@@ -11,15 +11,15 @@ import {
     map, many, combine, choice
 } from '../../src/parser_combinators'
 
-const ll = choice([
+const ll = choice(
     [ string('num'), map(number, n => Number(n)) ],
     [ string('str'), string('hello') ]
-]);
+);
 
 const nn = map(number, x => +x);
 
 const wp = mapPositionToLineCol(
-    combine([ many(ws), withPosition(number) ], (_, x) => x)
+    combine((_, x) => x, many(ws), withPosition(number))
 );
 
 test(ll, 'strhello');
