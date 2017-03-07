@@ -1,7 +1,7 @@
 
 import { Parser, left, right, pair } from './parser_combinators'
 import {
-    ParserStream,
+    ParserStream, Either,
     parseCombine as combine,
     parseCombine3 as combine3,
     parseMany as many,
@@ -11,11 +11,13 @@ import {
 }  from './parser_combinators'
 
 export {
-    TextStream, StringParser,
+    TextStream, StringParser, WithPosition, WithLineCol,
 
     StringParserError, StringMismatch, CharNotExpected,
 
-    oneOf, choice, string
+    oneOf, choice, string,
+
+    position, withPosition, mapPositionToLineCol
 }
 
 export type char = string;
@@ -26,6 +28,9 @@ interface TextStream extends ParserStream<char> {
 }
 
 type StringParser<E, T> = Parser<char, TextStream, E, T>
+
+type WithPosition<T> = { position: number, value: T }
+type WithLineCol<T>  = { line: number, col: number, value: T }
 
 const StaticErrors: { [key in SimpleParserError]: { kind: 'pc_error', code: key } } = {
     digit_expected:         mkSimpleError('digit_expected'),
@@ -138,6 +143,44 @@ function oneOf(s: char): StringParser<CharNotExpected, char> {
 function choice<E, T>(map: { [key: string]: StringParser<E, T> }): StringParser<E | StringMismatch, T> {
     const keys = Object.keys(map).sort().reverse();
     return genericChoice(keys.map(k => pair(string(k), map[k])));
+}
+
+function position<S extends TextStream>(st: S): Either<never, [number, S]> {
+    return right(pair(st.getPosition(), st));
+}
+
+function withPosition<E, T>(p: StringParser<E, T>): StringParser<WithPosition<E>, WithPosition<T>> {
+    return (st) => {
+        const res = p(st);
+        const position = st.getPosition();
+
+        if (res.kind === 'left') {
+            return left({ position, value: res.value });
+        }
+
+        return right(pair({ position, value: res.value[0] }, res.value[1]));
+    };
+}
+
+function positionToLineCol<T>(st: TextStream, n: WithPosition<T>) {
+    const lineCol = st.getLineCol(n.position);
+
+    return {
+        line: lineCol[0] + 1,
+        col:  lineCol[1] + 1,
+        value: n.value
+    };
+}
+
+function mapPositionToLineCol<E, T>(p: StringParser<WithPosition<E>, WithPosition<T>>): StringParser<WithLineCol<E>, WithLineCol<T>> {
+    return (st) => {
+        const res = p(st);
+        if (res.kind === 'left') {
+            return left(positionToLineCol(st, res.value));
+        }
+
+        return right(pair(positionToLineCol(st, res.value[0]), res.value[1]));
+    };
 }
 
 function isWhiteSpace(s: char) {
