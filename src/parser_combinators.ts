@@ -1,7 +1,7 @@
 
 export {
     /* Types */
-    Parser, ParserStream,
+    Parser, ParserStream, EosExpected,
 
     /* combinators */
     map, mapError, many, oneOrMore,
@@ -20,7 +20,7 @@ export {
     recover, inspect,
 
     /* Auxiliary types */
-    Left, Right, Either,
+    Left, Right, Either, Literal,
 
     /* helpers */
     left, right, pair

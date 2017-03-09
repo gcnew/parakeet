@@ -9,7 +9,8 @@ import {
 export {
     TextStream, StringParser, WithPosition, WithLineCol,
 
-    StringParserError, StringMismatch, CharNotExpected,
+    StringParserError, DigitExpected, WhitespaceExpected, UnderscoreExpected,
+    AsciiAlphaExpected, AsciiIdCharExpected, StringMismatch, CharNotExpected,
 
     oneOf, choice, string,
 
@@ -28,33 +29,29 @@ type StringParser<E, T> = Parser<char, TextStream, E, T>
 type WithPosition<T> = { position: number, value: T }
 type WithLineCol<T>  = { line: number, col: number, value: T }
 
-const StaticErrors: { [key in SimpleParserError]: { kind: 'pc_error', code: key } } = {
-    digit_expected:         mkSimpleError('digit_expected'),
-    whitespace_expected:    mkSimpleError('whitespace_expected'),
-    underscore_expected:    mkSimpleError('underscore_expected'),
-    ascii_alpha_expected:   mkSimpleError('ascii_alpha_expected'),
-    ascii_id_char_expected: mkSimpleError('ascii_id_char_expected'),
-};
+type DigitExpected       = { kind: 'pc_error', code: 'digit_expected'         }
+type WhitespaceExpected  = { kind: 'pc_error', code: 'whitespace_expected'    }
+type UnderscoreExpected  = { kind: 'pc_error', code: 'underscore_expected'    }
+type AsciiAlphaExpected  = { kind: 'pc_error', code: 'ascii_alpha_expected'   }
+type AsciiIdCharExpected = { kind: 'pc_error', code: 'ascii_id_char_expected' }
 
-type StringParserError = typeof StaticErrors[SimpleParserError]
+type StringParserError = DigitExpected
+                       | WhitespaceExpected
+                       | UnderscoreExpected
+                       | AsciiAlphaExpected
+                       | AsciiIdCharExpected
                        | StringMismatch
                        | CharNotExpected
-
-type SimpleParserError = 'digit_expected'
-                       | 'whitespace_expected'
-                       | 'underscore_expected'
-                       | 'ascii_alpha_expected'
-                       | 'ascii_id_char_expected'
 
 type StringMismatch    = { kind: 'pc_error', code: 'string_mismatch',   expected: string }
 type CharNotExpected   = { kind: 'pc_error', code: 'char_not_expected', expected: string }
 
 
-export const ws          = charParser(isWhiteSpace,  StaticErrors.whitespace_expected);
-export const digit       = charParser(isDigit,       StaticErrors.digit_expected);
-export const under       = charParser(isUnder,       StaticErrors.underscore_expected);
-export const asciiAlpha  = charParser(isAsciiAlpha,  StaticErrors.ascii_alpha_expected);
-export const asciiIdChar = charParser(isAsciiIdChar, StaticErrors.ascii_id_char_expected);
+export const ws          = charParser(isWhiteSpace,  mkSimpleError('whitespace_expected'));
+export const digit       = charParser(isDigit,       mkSimpleError('digit_expected'));
+export const under       = charParser(isUnder,       mkSimpleError('underscore_expected'));
+export const asciiAlpha  = charParser(isAsciiAlpha,  mkSimpleError('ascii_alpha_expected'));
+export const asciiIdChar = charParser(isAsciiIdChar, mkSimpleError('ascii_id_char_expected'));
 
 export const char = string;
 
