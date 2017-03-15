@@ -369,7 +369,7 @@ function inspect<M, S extends ParserStream<M>, E1, E2, A, B>(
             return res;
         }
 
-        return f(res.value[0])(st);
+        return f(res.value[0])(res.value[1]);
     };
 }
 
