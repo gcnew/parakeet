@@ -1,0 +1,340 @@
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "block_statement",
+                "statements": [
+                    {
+                        "kind": "block_statement",
+                        "statements": [
+                            {
+                                "kind": "block_statement",
+                                "statements": []
+                            },
+                            {
+                                "kind": "function_decl",
+                                "name": "innerFunction",
+                                "params": [
+                                    "arg"
+                                ],
+                                "body": {
+                                    "kind": "block_statement",
+                                    "statements": []
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "kind": "if_statement",
+                "cond": {
+                    "kind": "bool_expr",
+                    "value": true
+                },
+                "ifTrue": {
+                    "kind": "block_statement",
+                    "statements": [
+                        {
+                            "kind": "const_decl",
+                            "name": "x",
+                            "expr": {
+                                "kind": "num_expr",
+                                "value": 10
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "kind": "if_statement",
+                "cond": {
+                    "kind": "bool_expr",
+                    "value": false
+                },
+                "ifTrue": {
+                    "kind": "block_statement",
+                    "statements": [
+                        {
+                            "kind": "const_decl",
+                            "name": "y",
+                            "expr": {
+                                "kind": "num_expr",
+                                "value": 1
+                            }
+                        }
+                    ]
+                },
+                "ifFalse": {
+                    "kind": "block_statement",
+                    "statements": [
+                        {
+                            "kind": "const_decl",
+                            "name": "y",
+                            "expr": {
+                                "kind": "num_expr",
+                                "value": 2
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "kind": "function_decl",
+                "name": "main",
+                "params": [],
+                "body": {
+                    "kind": "block_statement",
+                    "statements": [
+                        {
+                            "kind": "const_decl",
+                            "name": "s",
+                            "expr": {
+                                "kind": "str_expr",
+                                "value": "hello world'\n :D"
+                            }
+                        },
+                        {
+                            "kind": "const_decl",
+                            "name": "n",
+                            "expr": {
+                                "kind": "num_expr",
+                                "value": 42
+                            }
+                        },
+                        {
+                            "kind": "const_decl",
+                            "name": "id",
+                            "expr": {
+                                "kind": "lambda_expr",
+                                "params": [
+                                    "x"
+                                ],
+                                "body": {
+                                    "kind": "var_expr",
+                                    "name": "x"
+                                }
+                            }
+                        },
+                        {
+                            "kind": "const_decl",
+                            "name": "toString",
+                            "expr": {
+                                "kind": "lambda_expr",
+                                "params": [
+                                    "x"
+                                ],
+                                "body": {
+                                    "kind": "call_expr",
+                                    "fn": {
+                                        "kind": "member_expr",
+                                        "obj": {
+                                            "kind": "var_expr",
+                                            "name": "x"
+                                        },
+                                        "prop": "toString"
+                                    },
+                                    "args": []
+                                }
+                            }
+                        },
+                        {
+                            "kind": "const_decl",
+                            "name": "const",
+                            "expr": {
+                                "kind": "lambda_expr",
+                                "params": [
+                                    "x"
+                                ],
+                                "body": {
+                                    "kind": "lambda_expr",
+                                    "params": [
+                                        "y"
+                                    ],
+                                    "body": {
+                                        "kind": "var_expr",
+                                        "name": "x"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "kind": "const_decl",
+                            "name": "hard",
+                            "expr": {
+                                "kind": "call_expr",
+                                "fn": {
+                                    "kind": "call_expr",
+                                    "fn": {
+                                        "kind": "var_expr",
+                                        "name": "f"
+                                    },
+                                    "args": [
+                                        {
+                                            "kind": "index_expr",
+                                            "obj": {
+                                                "kind": "member_expr",
+                                                "obj": {
+                                                    "kind": "var_expr",
+                                                    "name": "res"
+                                                },
+                                                "prop": "value"
+                                            },
+                                            "index": {
+                                                "kind": "num_expr",
+                                                "value": 0
+                                            }
+                                        }
+                                    ]
+                                },
+                                "args": [
+                                    {
+                                        "kind": "index_expr",
+                                        "obj": {
+                                            "kind": "member_expr",
+                                            "obj": {
+                                                "kind": "var_expr",
+                                                "name": "res"
+                                            },
+                                            "prop": "value"
+                                        },
+                                        "index": {
+                                            "kind": "num_expr",
+                                            "value": 1
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "kind": "return_statement",
+                            "expr": {
+                                "kind": "num_expr",
+                                "value": 3
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        {
+            "source": "\n{{\n    {}\n    function innerFunction(arg) {\n    }\n}}\n\nif (true) {\n    const x = 10;\n}\n\nif (false) {\n    const y = 1;\n} else {\n    const y = 2;\n}\n\nfunction main() {\n    const s = 'hello world\\'\\n :D';\n    const n = 42\n    const id = x => x;\n    const toString = x => x.toString();\n    const const = x => y => x;\n    const hard  = f(res.value[0])(res.value[1])\n\n    return 3;\n}\n",
+            "offset": 377,
+            "lineOffsetTable": [
+                [
+                    0,
+                    ""
+                ],
+                [
+                    1,
+                    "{{"
+                ],
+                [
+                    4,
+                    "    {}"
+                ],
+                [
+                    11,
+                    "    function innerFunction(arg) {"
+                ],
+                [
+                    45,
+                    "    }"
+                ],
+                [
+                    51,
+                    "}}"
+                ],
+                [
+                    54,
+                    ""
+                ],
+                [
+                    55,
+                    "if (true) {"
+                ],
+                [
+                    67,
+                    "    const x = 10;"
+                ],
+                [
+                    85,
+                    "}"
+                ],
+                [
+                    87,
+                    ""
+                ],
+                [
+                    88,
+                    "if (false) {"
+                ],
+                [
+                    101,
+                    "    const y = 1;"
+                ],
+                [
+                    118,
+                    "} else {"
+                ],
+                [
+                    127,
+                    "    const y = 2;"
+                ],
+                [
+                    144,
+                    "}"
+                ],
+                [
+                    146,
+                    ""
+                ],
+                [
+                    147,
+                    "function main() {"
+                ],
+                [
+                    165,
+                    "    const s = 'hello world\\'\\n :D';"
+                ],
+                [
+                    201,
+                    "    const n = 42"
+                ],
+                [
+                    218,
+                    "    const id = x => x;"
+                ],
+                [
+                    241,
+                    "    const toString = x => x.toString();"
+                ],
+                [
+                    281,
+                    "    const const = x => y => x;"
+                ],
+                [
+                    312,
+                    "    const hard  = f(res.value[0])(res.value[1])"
+                ],
+                [
+                    360,
+                    ""
+                ],
+                [
+                    361,
+                    "    return 3;"
+                ],
+                [
+                    375,
+                    "}"
+                ],
+                [
+                    377,
+                    ""
+                ]
+            ]
+        }
+    ]
+}
