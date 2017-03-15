@@ -1,14 +1,16 @@
 
 export {
     /* Types */
-    Parser, ParserStream, EosExpected,
+    Parser, ParserStream, EosReached, EosExpected,
 
     /* combinators */
-    map, mapError, many, oneOrMore,
+    map, mapError,
 
-    maybe, trai, satisfy,
+    many, oneOrMore, separated, pwhile,
 
-    eos, terminated, pconst, pfail,
+    peek, maybe, trai, satisfy,
+
+    any, eos, not, terminated, pconst, pfail,
 
     alt, alt3, alt4, genericAlt,
 
@@ -20,11 +22,13 @@ export {
     recover, inspect,
 
     /* Auxiliary types */
-    Left, Right, Either, Literal,
+    Left, Right, Either, Literal, Any,
 
     /* helpers */
     left, right, pair
 }
+
+type Any = {} | undefined | null
 
 type Left<L>  = { kind: 'left',  value: L }
 type Right<R> = { kind: 'right', value: R }
@@ -39,6 +43,7 @@ interface ParserStream<S> {
 
 type Parser<M, S extends ParserStream<M>, E, T> = (st: S) => Either<E, [T, S]>
 
+type EosReached  = { kind: 'pc_error', code: 'eos_reached'  }
 type EosExpected = { kind: 'pc_error', code: 'eos_expected' }
 
 function left<L>(value: L): Left<L> {
@@ -75,9 +80,21 @@ function mapError<M, S extends ParserStream<M>, E1, E2, T>(p: Parser<M, S, E1, T
     };
 }
 
+const eosReached = left({ kind: 'pc_error', code: 'eos_reached' } as EosReached);
+
+function any<M, S extends ParserStream<M>>(st: S): Either<EosReached, [M, S]> {
+    const val = st.next();
+
+    if (!val) {
+        return eosReached;
+    }
+
+    return right(val);
+}
+
 const eosExpected = left({ kind: 'pc_error', code: 'eos_expected' } as EosExpected);
 
-function eos<S extends ParserStream<{}>>(st: S): Either<EosExpected, [undefined, S]> {
+function eos<S extends ParserStream<Any>>(st: S): Either<EosExpected, [undefined, S]> {
     if (st.next()) {
         return eosExpected;
     }
@@ -102,8 +119,20 @@ function pfail<E extends Literal>(e: E) {
     };
 }
 
+function not<M, S extends ParserStream<M>, E, T>(p: Parser<M, S, E, T>): Parser<M, S, T, E> {
+    return (st) => {
+        const res = p(st);
+
+        if (res.kind === 'left') {
+            return right(pair(res.value, st));
+        }
+
+        return left(res.value[0]);
+    };
+}
+
 function alt<M, S extends ParserStream<M>, E, A, B>(
-    p1: Parser<M, S, {}, A>,
+    p1: Parser<M, S, Any, A>,
     p2: Parser<M, S, E, B>
 ): Parser<M, S, E, A|B> {
     return (st) => {
@@ -117,17 +146,17 @@ function alt<M, S extends ParserStream<M>, E, A, B>(
 }
 
 function alt3<M, S extends ParserStream<M>, E, A, B, C>(
-    p1: Parser<M, S, {}, A>,
-    p2: Parser<M, S, {}, B>,
+    p1: Parser<M, S, Any, A>,
+    p2: Parser<M, S, Any, B>,
     p3: Parser<M, S, E, C>
 ): Parser<M, S, E, A|B|C> {
     return genericAlt<M, S, any, A|B|C>([ p1, p2, p3 ]);
 }
 
 function alt4<M, S extends ParserStream<M>, E, A, B, C, D>(
-    p1: Parser<M, S, {}, A>,
-    p2: Parser<M, S, {}, B>,
-    p3: Parser<M, S, {}, C>,
+    p1: Parser<M, S, Any, A>,
+    p2: Parser<M, S, Any, B>,
+    p3: Parser<M, S, Any, C>,
     p4: Parser<M, S, E,  D>
 ): Parser<M, S, E, A|B|C|D> {
     return genericAlt<M, S, any, A|B|C|D>([ p1, p2, p3, p4 ]);
@@ -136,6 +165,9 @@ function alt4<M, S extends ParserStream<M>, E, A, B, C, D>(
 function genericAlt<M, S extends ParserStream<M>, E, T>(parsers: Parser<M, S, E, T>[]): Parser<M, S, E, T> {
     if (!parsers.length) {
         throw new Error('No parsers provided');
+    }
+    if (!parsers.every(x => typeof x === 'function')) {
+        throw new Error('Empty parser!');
     }
 
     return (st) => {
@@ -187,6 +219,9 @@ function genericCombine<M, S extends ParserStream<M>, E, A, B>(
     if (!parsers.length) {
         throw new Error('No parsers provided');
     }
+    if (!parsers.every(x => typeof x === 'function')) {
+        throw new Error('Empty parser!');
+    }
 
     return (st) => {
         let cur = st;
@@ -206,7 +241,7 @@ function genericCombine<M, S extends ParserStream<M>, E, A, B>(
     };
 }
 
-function many<M, S extends ParserStream<M>, A>(p: Parser<M, S, {}, A>): Parser<M, S, never, A[]> {
+function many<M, S extends ParserStream<M>, A>(p: Parser<M, S, Any, A>): Parser<M, S, never, A[]> {
     return (st) => {
         let cur = st;
         const results: A[] = [];
@@ -226,11 +261,58 @@ function many<M, S extends ParserStream<M>, A>(p: Parser<M, S, {}, A>): Parser<M
     };
 }
 
+function pwhile<M, S extends ParserStream<M>, E, T>(
+    cond: Parser<M, S, Any, Any>,
+    body: Parser<M, S, E, T>
+): Parser<M, S, E, T[]> {
+    return (st) => {
+        let cur = st;
+        const results: T[] = [];
+
+        while (true) {
+            const temp = cond(cur);
+
+            if (temp.kind !== 'right') {
+                break;
+            }
+
+            const res = body(temp.value[1]);
+            if (res.kind === 'left') {
+                return res;
+            }
+
+            cur = res.value[1];
+            results.push(res.value[0])
+        }
+
+        return right(pair(results, cur));
+    };
+}
+
 function oneOrMore<M, S extends ParserStream<M>, E, A>(p: Parser<M, S, E, A>): Parser<M, S, E, A[]> {
     return combine(p, many(p), (x, xs) => (xs.unshift(x), xs));
 }
 
-function maybe<M, S extends ParserStream<M>, A>(p1: Parser<M, S, {}, A>): Parser<M, S, never, A|undefined> {
+function separated<M, S extends ParserStream<M>, Е, T>(
+    p: Parser<M, S, Е, T>,
+    sep: Parser<M, S, Any, Any>
+): Parser<M, S, Е, T[]> {
+    return combine(p, many(combine(sep, p, (_, x) => x)), (x, xs) => (xs.unshift(x), xs));
+}
+
+function peek<M, S extends ParserStream<M>, E>(p1: Parser<M, S, E, Any>): Parser<M, S, E, true> {
+    return (st) => {
+        const res = p1(st);
+
+        if (res.kind === 'left') {
+            return res;
+        }
+
+        return right(pair(true, st));
+    };
+}
+
+function maybe<M, S extends ParserStream<M>, A>(p1: Parser<M, S, Any, A>): Parser<M, S, never, A|undefined> {
     return (st) => {
         const res = p1(st);
 
@@ -303,33 +385,38 @@ function satisfy<M, S extends ParserStream<M>, E>(f: (x: M) => boolean, e: E): P
     };
 }
 
-function choice<M, S extends ParserStream<M>, E1, E2, E3, E4, T1, T2>(
-    p1: [Parser<M, S, E1, {}>, Parser<M, S, E2, T1>],
-    p2: [Parser<M, S, E3, {}>, Parser<M, S, E4, T2>]
-): Parser<M, S, E1|E2|E3|E4, T1|T2> {
-    return genericChoice<M, S, E1|E3, E2|E4, T1|T2>([p1, p2]);
+function choice<M, S extends ParserStream<M>, E1, E2, E3, T1, T2>(
+    p1: [Parser<M, S, Any, Any>, Parser<M, S, E2, T1>],
+    p2: [Parser<M, S, E1,  Any>, Parser<M, S, E3, T2>]
+): Parser<M, S, E1|E2|E3, T1|T2> {
+    return genericChoice<M, S, any, E2|E3, T1|T2>([p1, p2]);
 }
 
-function choice3<M, S extends ParserStream<M>, E1, E2, E3, E4, E5, E6, T1, T2, T3>(
-    p1: [Parser<M, S, E1, {}>, Parser<M, S, E2, T1>],
-    p2: [Parser<M, S, E3, {}>, Parser<M, S, E4, T2>],
-    p3: [Parser<M, S, E5, {}>, Parser<M, S, E6, T3>]
-): Parser<M, S, E1|E2|E3|E4|E5|E6, T1|T2|T3> {
-    return genericChoice<M, S, E1|E3|E5, E2|E4|E6, T1|T2|T3>([p1, p2, p3]);
+function choice3<M, S extends ParserStream<M>, E1, E2, E3, E4, T1, T2, T3>(
+    p1: [Parser<M, S, Any, Any>, Parser<M, S, E2, T1>],
+    p2: [Parser<M, S, Any, Any>, Parser<M, S, E3, T2>],
+    p3: [Parser<M, S, E1,  Any>, Parser<M, S, E4, T3>]
+): Parser<M, S, E1|E2|E3|E4, T1|T2|T3> {
+    return genericChoice<M, S, any, E2|E3|E4, T1|T2|T3>([p1, p2, p3]);
 }
 
-function choice4<M, S extends ParserStream<M>, E1, E2, E3, E4, E5, E6, E7, E8, T1, T2, T3, T4>(
-    p1: [Parser<M, S, E1, {}>, Parser<M, S, E2, T1>],
-    p2: [Parser<M, S, E3, {}>, Parser<M, S, E4, T2>],
-    p3: [Parser<M, S, E5, {}>, Parser<M, S, E6, T3>],
-    p4: [Parser<M, S, E7, {}>, Parser<M, S, E8, T4>]
-): Parser<M, S, E1|E2|E3|E4|E5|E6|E7|E8, T1|T2|T3|T4> {
-    return genericChoice<M, S, E1|E3|E5|E7, E2|E4|E6|E8, T1|T2|T3|T4>([p1, p2, p3, p4]);
+function choice4<M, S extends ParserStream<M>, E1, E2, E3, E4, E5, T1, T2, T3, T4>(
+    p1: [Parser<M, S, Any, Any>, Parser<M, S, E2, T1>],
+    p2: [Parser<M, S, Any, Any>, Parser<M, S, E3, T2>],
+    p3: [Parser<M, S, Any, Any>, Parser<M, S, E4, T3>],
+    p4: [Parser<M, S, E1,  Any>, Parser<M, S, E5, T4>]
+): Parser<M, S, E1|E2|E3|E4|E5, T1|T2|T3|T4> {
+    return genericChoice<M, S, any, E2|E3|E4|E5, T1|T2|T3|T4>([p1, p2, p3, p4]);
 }
 
-function genericChoice<M, S extends ParserStream<M>, E1, E2, T>(parsers: [Parser<M, S, E1, {}>, Parser<M, S, E2, T>][]): Parser<M, S, E1|E2, T> {
+function genericChoice<M, S extends ParserStream<M>, E1, E2, T>(
+    parsers: [Parser<M, S, E1, Any>, Parser<M, S, E2, T>][]
+): Parser<M, S, E1|E2, T> {
     if (!parsers.length) {
         throw new Error('No parsers provided');
+    }
+    if (!parsers.every(x => typeof x[0] === 'function' && typeof x[1] === 'function')) {
+        throw new Error('Empty parser!');
     }
 
     return (st) => {
