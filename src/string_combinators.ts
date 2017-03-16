@@ -3,7 +3,7 @@ import { Parser, left, right, pair } from './parser_combinators'
 import {
     ParserStream, Either,
 
-    combine, combine3, many, trai, satisfy, genericChoice
+    combine, combine3, alt, many, trai, satisfy, genericChoice
 }  from './parser_combinators'
 
 export {
@@ -56,7 +56,7 @@ export const asciiIdChar = charParser(isAsciiIdChar, mkSimpleError('ascii_id_cha
 export const char = string;
 
 export const asciiId = combine(
-    asciiAlpha,
+    alt(under, asciiAlpha),
     many(asciiIdChar),
     (x, xs) => x + xs.join('')
 );
