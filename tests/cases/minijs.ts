@@ -2,15 +2,15 @@
 import { test } from '../test_util'
 
 import {
-    StringParser, TextStream, StringMismatch, AsciiAlphaExpected,
+    StringParser, TextStream, StringMismatch, AsciiAlphaExpected, DigitExpected,
 
-    char, string, number, ws, asciiId, withPosition, mapPositionToLineCol
+    char, string, number, digit, ws, asciiId, withPosition, mapPositionToLineCol
 } from '../../src/string_combinators'
 
 import {
     EosExpected,
 
-    map, pwhile, not, eos, alt, alt4, many, peek, maybe, trai, pconst, pfail, combine, combine3,
+    map, pwhile, not, eos, alt, many, peek, maybe, trai, pconst, pfail, combine, combine3,
     choice, choice3, choice4, genericChoice, inspect, satisfy, separated, any, pair
 } from '../../src/parser_combinators'
 
@@ -133,84 +133,26 @@ const skipWs = many(ws);
 
 const tId = t(asciiId);
 
-const parseExpr: StringParser<StringMismatch|AsciiAlphaExpected, Expr> = alt4(
-    map(t(number),   n => mkNumExpr(+n)),
-
-    map(tk('true'),  _ => mkBoolExpr(true)),
-    map(tk('false'), _ => mkBoolExpr(false)),
-
-    genericChoice<char, TextStream, StringMismatch, StringMismatch|AsciiAlphaExpected, Expr>([
-        [ peek(char('\'')),  map((st: TextStream) => tStringLit(st), mkStrExpr) ],
-        [ peek(char('[')),   st => parseArray(st)              ],
-        [ peek(char('{')),   st => parseObject(st)             ],
-        [ peek(char('(')),   st => parseLambdaOrPriority(st)   ],
-        [ pconst(true),      st => parseIdLamCallMember(st)    ]
-    ])
-);
-
-const parseParameters = combine3(
-    ts('('),
-    maybe(separated(tId, ts(','))),
-    ts(')'),
-
-    (_, params) => params || []
-);
-
-const parseLambdaOrPriority = alt(
-    combine3(
-        parseParameters, ts('=>'), parseExpr,
-        (params, _, expr) => mkLambdaExpr(params, expr)
-    ),
-    combine3(
-        ts('('), parseExpr, ts(')'),
-        _2
-    )
-);
-
-const parseCallArgs = combine3(
-    ts('('),
-    maybe(separated(parseExpr, ts(','))),
-    ts(')'),
-
-    (_, args) => args || []
-);
-
-const parseIndex = combine3(
-    ts('['),
-    parseExpr,
-    ts(']'),
-
-    _2
-);
-
-const parseIdLamCallMember = combine(
-    tId,
-    choice(
-        [ ts('=>'),      parseExpr ],
-        [ pconst(true),  maybe(
-                             many(
-                                 choice3(
-                                     [ peek(char('(')), map(parseCallArgs, x => tagged('call', x))   ],
-                                     [         ts('.'), map(tId,           x => tagged('member', x)) ],
-                                     [ peek(char('[')), map(parseIndex,    x => tagged('index', x))  ]
-                                 )
-                             )
-                         ) ]
+const parseExpr: StringParser<StringMismatch|AsciiAlphaExpected|DigitExpected, Expr> = combine(
+    (st: TextStream) => parsePrimary(st),
+    many(
+        choice3(
+            [ peek(char('(')), map((st: TextStream) => parseCallArgs(st), x => tagged('call', x))   ],
+            [         ts('.'), map((st: TextStream) => tId(st),           x => tagged('member', x)) ],
+            [ peek(char('[')), map((st: TextStream) => parseIndex(st),    x => tagged('index', x))  ]
+        )
     ),
 
-    (id, xs) => xs ? Array.isArray(xs)
-                       ? xs.reduce(
-                           (e, p) => p.tag === 'call'   ? mkCallExpr(e, p.value)   :
-                                     p.tag === 'member' ? mkMemberExpr(e, p.value) :
-                                     p.tag === 'index'  ? mkIndexExpr(e, p.value)  : assertNever(p),
-                           mkVarExpr(id) as Expr
-                         )
-                       : mkLambdaExpr([ id ], xs)
-                   : mkVarExpr(id)
+    (prim, xs) => xs.reduce(
+                      (e, p) => p.tag === 'call'   ? mkCallExpr(e, p.value)   :
+                                p.tag === 'member' ? mkMemberExpr(e, p.value) :
+                                p.tag === 'index'  ? mkIndexExpr(e, p.value)  : assertNever(p),
+                      prim
+                  )
 );
 
-const parseStatement: StringParser<StringMismatch | AsciiAlphaExpected, Statement> = combine(
-    genericChoice<char, TextStream, StringMismatch | AsciiAlphaExpected, StringMismatch | AsciiAlphaExpected, Statement>([
+const parseStatement: StringParser<StringMismatch|AsciiAlphaExpected|DigitExpected, Statement> = combine(
+    genericChoice<char, TextStream, StringMismatch|AsciiAlphaExpected, StringMismatch|AsciiAlphaExpected|DigitExpected, Statement>([
         [ tk('const'),      st => parseConstDecl(st)          ],
         [ tk('if'),         st => parseIf(st)                 ],
         [ tk('function'),   st => parseFunctionDecl(st)       ],
@@ -237,6 +179,14 @@ const parseBlock = combine3(
     ts('}'),
 
     (_, statements) => mkBlockStatement(statements || [])
+);
+
+const parseParameters = combine3(
+    ts('('),
+    maybe(separated(tId, ts(','))),
+    ts(')'),
+
+    (_, params) => params || []
 );
 
 // Function = "function" " "+ Id " "* Block
@@ -302,6 +252,58 @@ const parseObject = combine3(
     (_, props) => mkObjectExpr(props || [])
 );
 
+const parseLambdaOrPriority = alt(
+    combine3(
+        parseParameters, ts('=>'), parseExpr,
+        (params, _, expr) => mkLambdaExpr(params, expr)
+    ),
+    combine3(
+        ts('('), parseExpr, ts(')'),
+        _2
+    )
+);
+
+const parseCallArgs = combine3(
+    ts('('),
+    maybe(separated(parseExpr, ts(','))),
+    ts(')'),
+
+    (_, args) => args || []
+);
+
+const parseIndex = combine3(
+    ts('['),
+    parseExpr,
+    ts(']'),
+
+    _2
+);
+
+const parseIdOrLambda = combine(
+    tId,
+    trai(ts('=>'), parseExpr, _2),
+
+    (id, expr) => expr ? mkLambdaExpr([id], expr)
+                       : mkVarExpr(id)
+);
+
+const parsePrimary = genericChoice<
+    char,
+    TextStream,
+    AsciiAlphaExpected|StringMismatch|DigitExpected,
+    StringMismatch|AsciiAlphaExpected|DigitExpected,
+    Expr
+>([
+    [ peek(char('\'')),  map(tStringLit, mkStrExpr)         ],
+    [ peek(char('[')),   parseArray                         ],
+    [ peek(char('{')),   parseObject                        ],
+    [ peek(char('(')),   parseLambdaOrPriority              ],
+    [ peek(digit),       map(t(number), n => mkNumExpr(+n)) ],
+    [ tk('true'),        pconst(mkBoolExpr(true))           ],
+    [ tk('false'),       pconst(mkBoolExpr(false))          ],
+    [ pconst(true),      parseIdOrLambda                    ]
+]);
+
 const parseProgram = combine(
     skipWs,
     pwhile(
@@ -366,6 +368,12 @@ if (false) {
     const y = 2;
 }
 
+const lambda1 = (x) => x;
+const flip1 = f => (x,y) => f(y,x);
+
+function lambda2(x){return x;}function flip2(f, x,y){return f(y,x)}
+
+
 function main() {
     const s = 'hello world\\'\\n :D';
     const n = 42
@@ -377,3 +385,10 @@ function main() {
     return 3;
 }
 `);
+
+test(parseProgram, `1.toString()`);
+test(parseProgram, `(1).toString()`);
+test(parseProgram, `'hello'.length`);
+test(parseProgram, `[1, 2, 3].map(_ => true)`);
+test(parseProgram, `({ key: 'value', 'prop': 5 })`);
+test(parseProgram, `const x = [1, 2, 3]; x[5];`)

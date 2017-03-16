@@ -81,6 +81,107 @@
                 }
             },
             {
+                "kind": "const_decl",
+                "name": "lambda1",
+                "expr": {
+                    "kind": "lambda_expr",
+                    "params": [
+                        "x"
+                    ],
+                    "body": {
+                        "kind": "var_expr",
+                        "name": "x"
+                    }
+                }
+            },
+            {
+                "kind": "const_decl",
+                "name": "flip1",
+                "expr": {
+                    "kind": "lambda_expr",
+                    "params": [
+                        "f"
+                    ],
+                    "body": {
+                        "kind": "lambda_expr",
+                        "params": [
+                            "x",
+                            "y"
+                        ],
+                        "body": {
+                            "kind": "call_expr",
+                            "fn": {
+                                "kind": "var_expr",
+                                "name": "f"
+                            },
+                            "args": [
+                                {
+                                    "kind": "var_expr",
+                                    "name": "y"
+                                },
+                                {
+                                    "kind": "var_expr",
+                                    "name": "x"
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "kind": "function_decl",
+                "name": "lambda2",
+                "params": [
+                    "x"
+                ],
+                "body": {
+                    "kind": "block_statement",
+                    "statements": [
+                        {
+                            "kind": "return_statement",
+                            "expr": {
+                                "kind": "var_expr",
+                                "name": "x"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "kind": "function_decl",
+                "name": "flip2",
+                "params": [
+                    "f",
+                    "x",
+                    "y"
+                ],
+                "body": {
+                    "kind": "block_statement",
+                    "statements": [
+                        {
+                            "kind": "return_statement",
+                            "expr": {
+                                "kind": "call_expr",
+                                "fn": {
+                                    "kind": "var_expr",
+                                    "name": "f"
+                                },
+                                "args": [
+                                    {
+                                        "kind": "var_expr",
+                                        "name": "y"
+                                    },
+                                    {
+                                        "kind": "var_expr",
+                                        "name": "x"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
                 "kind": "function_decl",
                 "name": "main",
                 "params": [],
@@ -219,8 +320,8 @@
             }
         ],
         {
-            "source": "\n{{\n    {}\n    function innerFunction(arg) {\n    }\n}}\n\nif (true) {\n    const x = 10;\n}\n\nif (false) {\n    const y = 1;\n} else {\n    const y = 2;\n}\n\nfunction main() {\n    const s = 'hello world\\'\\n :D';\n    const n = 42\n    const id = x => x;\n    const toString = x => x.toString();\n    const const = x => y => x;\n    const hard  = f(res.value[0])(res.value[1])\n\n    return 3;\n}\n",
-            "offset": 377,
+            "source": "\n{{\n    {}\n    function innerFunction(arg) {\n    }\n}}\n\nif (true) {\n    const x = 10;\n}\n\nif (false) {\n    const y = 1;\n} else {\n    const y = 2;\n}\n\nconst lambda1 = (x) => x;\nconst flip1 = f => (x,y) => f(y,x);\n\nfunction lambda2(x){return x;}function flip2(f, x,y){return f(y,x)}\n\n\nfunction main() {\n    const s = 'hello world\\'\\n :D';\n    const n = 42\n    const id = x => x;\n    const toString = x => x.toString();\n    const const = x => y => x;\n    const hard  = f(res.value[0])(res.value[1])\n\n    return 3;\n}\n",
+            "offset": 510,
             "lineOffsetTable": [
                 [
                     0,
@@ -292,47 +393,291 @@
                 ],
                 [
                     147,
+                    "const lambda1 = (x) => x;"
+                ],
+                [
+                    173,
+                    "const flip1 = f => (x,y) => f(y,x);"
+                ],
+                [
+                    209,
+                    ""
+                ],
+                [
+                    210,
+                    "function lambda2(x){return x;}function flip2(f, x,y){return f(y,x)}"
+                ],
+                [
+                    278,
+                    ""
+                ],
+                [
+                    279,
+                    ""
+                ],
+                [
+                    280,
                     "function main() {"
                 ],
                 [
-                    165,
+                    298,
                     "    const s = 'hello world\\'\\n :D';"
                 ],
                 [
-                    201,
+                    334,
                     "    const n = 42"
                 ],
                 [
-                    218,
+                    351,
                     "    const id = x => x;"
                 ],
                 [
-                    241,
+                    374,
                     "    const toString = x => x.toString();"
                 ],
                 [
-                    281,
+                    414,
                     "    const const = x => y => x;"
                 ],
                 [
-                    312,
+                    445,
                     "    const hard  = f(res.value[0])(res.value[1])"
                 ],
                 [
-                    360,
+                    493,
                     ""
                 ],
                 [
-                    361,
+                    494,
                     "    return 3;"
                 ],
                 [
-                    375,
+                    508,
                     "}"
                 ],
                 [
-                    377,
+                    510,
                     ""
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "left",
+    "value": {
+        "kind": "pc_error",
+        "code": "digit_expected"
+    }
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "expr_statement",
+                "expr": {
+                    "kind": "call_expr",
+                    "fn": {
+                        "kind": "member_expr",
+                        "obj": {
+                            "kind": "num_expr",
+                            "value": 1
+                        },
+                        "prop": "toString"
+                    },
+                    "args": []
+                }
+            }
+        ],
+        {
+            "source": "(1).toString()",
+            "offset": 14,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "(1).toString()"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "expr_statement",
+                "expr": {
+                    "kind": "member_expr",
+                    "obj": {
+                        "kind": "str_expr",
+                        "value": "hello"
+                    },
+                    "prop": "length"
+                }
+            }
+        ],
+        {
+            "source": "'hello'.length",
+            "offset": 14,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "'hello'.length"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "expr_statement",
+                "expr": {
+                    "kind": "call_expr",
+                    "fn": {
+                        "kind": "member_expr",
+                        "obj": {
+                            "kind": "array_expr",
+                            "value": [
+                                {
+                                    "kind": "num_expr",
+                                    "value": 1
+                                },
+                                {
+                                    "kind": "num_expr",
+                                    "value": 2
+                                },
+                                {
+                                    "kind": "num_expr",
+                                    "value": 3
+                                }
+                            ]
+                        },
+                        "prop": "map"
+                    },
+                    "args": [
+                        {
+                            "kind": "lambda_expr",
+                            "params": [
+                                "_"
+                            ],
+                            "body": {
+                                "kind": "bool_expr",
+                                "value": true
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        {
+            "source": "[1, 2, 3].map(_ => true)",
+            "offset": 24,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "[1, 2, 3].map(_ => true)"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "expr_statement",
+                "expr": {
+                    "kind": "object_expr",
+                    "value": [
+                        [
+                            "key",
+                            {
+                                "kind": "str_expr",
+                                "value": "value"
+                            }
+                        ],
+                        [
+                            "prop",
+                            {
+                                "kind": "num_expr",
+                                "value": 5
+                            }
+                        ]
+                    ]
+                }
+            }
+        ],
+        {
+            "source": "({ key: 'value', 'prop': 5 })",
+            "offset": 29,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "({ key: 'value', 'prop': 5 })"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "const_decl",
+                "name": "x",
+                "expr": {
+                    "kind": "array_expr",
+                    "value": [
+                        {
+                            "kind": "num_expr",
+                            "value": 1
+                        },
+                        {
+                            "kind": "num_expr",
+                            "value": 2
+                        },
+                        {
+                            "kind": "num_expr",
+                            "value": 3
+                        }
+                    ]
+                }
+            },
+            {
+                "kind": "expr_statement",
+                "expr": {
+                    "kind": "index_expr",
+                    "obj": {
+                        "kind": "var_expr",
+                        "name": "x"
+                    },
+                    "index": {
+                        "kind": "num_expr",
+                        "value": 5
+                    }
+                }
+            }
+        ],
+        {
+            "source": "const x = [1, 2, 3]; x[5];",
+            "offset": 26,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "const x = [1, 2, 3]; x[5];"
                 ]
             ]
         }
