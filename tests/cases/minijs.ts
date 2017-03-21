@@ -2,16 +2,18 @@
 import { test } from '../test_util'
 
 import {
-    StringParser, TextStream, StringMismatch, AsciiAlphaExpected, DigitExpected,
+    StringParser, TextStream, StringMismatch, AsciiAlphaExpected, CharNotExpected, DigitExpected,
 
-    char, string, number, digit, ws, asciiId, withPosition, mapPositionToLineCol
+    char, string, number, digit, ws, asciiId, oneOf
 } from '../../src/string_combinators'
 
 import {
     EosExpected,
 
     map, pwhile, not, eos, alt, many, peek, maybe, trai, pconst, pfail, combine, combine3,
-    choice, choice3, choice4, genericChoice, inspect, satisfy, separated, any, pair
+    choice, choice3, choice4, genericChoice, inspect, satisfy, separated, any, pair,
+
+    oneOrMore as many1
 } from '../../src/parser_combinators'
 
 
@@ -61,6 +63,8 @@ type Expr      = Literal
                | CallExpr
 
 type Program = Statement[]
+
+type InvalidOperator = { kind: 'pc_error', code: 'invalid_operator' }
 
 
 /* Constructors */
@@ -133,12 +137,44 @@ const skipWs = many(ws);
 
 const tId = t(asciiId);
 
+const invalid_operator = pfail<InvalidOperator>({
+    kind: 'pc_error',
+    code: 'invalid_operator'
+});
+
+// Not allowed:        ( ) [ ] { } ` ' " ,
+// Can't start with:   / !
+// Can't end with:     /
+// Reserved:           ? . .. : :: = /= === => & -> <- # $ @ - + * \ | / ! ~ % > <
+// Unary:              - + ! ~
+const operatorChar = oneOf('+-*/\\|~!=<>.?:#$@%');
+const parseOperatorRaw = alt(
+    char('!'),
+    inspect(many1(operatorChar), xs => {
+        const op = xs.join('');
+
+        if (op[0] === '.') {
+            if (op[op.length - 1] !== '.') {
+                return invalid_operator;
+            }
+
+            return pconst(op);
+        }
+
+        if (op[0] === '/' || op[op.length -1] === '/') {
+            return invalid_operator;
+        }
+
+        return pconst(op);
+    })
+);
+
 const parseExpr: StringParser<StringMismatch|AsciiAlphaExpected|DigitExpected, Expr> = combine(
     (st: TextStream) => parsePrimary(st),
     many(
         choice3(
             [ peek(char('(')), map((st: TextStream) => parseCallArgs(st), x => tagged('call', x))   ],
-            [         ts('.'), map((st: TextStream) => tId(st),           x => tagged('member', x)) ],
+            [         to('.'), map((st: TextStream) => tId(st),           x => tagged('member', x)) ],
             [ peek(char('[')), map((st: TextStream) => parseIndex(st),    x => tagged('index', x))  ]
         )
     ),
@@ -151,8 +187,17 @@ const parseExpr: StringParser<StringMismatch|AsciiAlphaExpected|DigitExpected, E
                   )
 );
 
-const parseStatement: StringParser<StringMismatch|AsciiAlphaExpected|DigitExpected, Statement> = combine(
-    genericChoice<char, TextStream, StringMismatch|AsciiAlphaExpected, StringMismatch|AsciiAlphaExpected|DigitExpected, Statement>([
+const parseStatement: StringParser<
+    StringMismatch|AsciiAlphaExpected|DigitExpected|CharNotExpected|InvalidOperator,
+    Statement
+> = combine(
+    genericChoice<
+        char,
+        TextStream,
+        StringMismatch|AsciiAlphaExpected,
+        StringMismatch|AsciiAlphaExpected|DigitExpected|CharNotExpected|InvalidOperator,
+        Statement
+    >([
         [ tk('const'),      st => parseConstDecl(st)          ],
         [ tk('if'),         st => parseIf(st)                 ],
         [ tk('function'),   st => parseFunctionDecl(st)       ],
@@ -168,7 +213,7 @@ const parseStatement: StringParser<StringMismatch|AsciiAlphaExpected|DigitExpect
 );
 
 const parseConstDecl = combine3(
-    tId, ts('='), parseExpr,
+    tId, to('='), parseExpr,
 
     (name, _, expr) => mkConstDecl(name, expr)
 );
@@ -239,7 +284,7 @@ const parseObject = combine3(
                     [ peek(char('\'')), tStringLit ],
                     [ pconst(true),     tId ]           // TODO: numbers
                 ),
-                ts(':'),
+                to(':'),
                 parseExpr,
 
                 (prop, _, val) => pair(prop, val)
@@ -254,7 +299,7 @@ const parseObject = combine3(
 
 const parseLambdaOrPriority = alt(
     combine3(
-        parseParameters, ts('=>'), parseExpr,
+        parseParameters, to('=>'), parseExpr,
         (params, _, expr) => mkLambdaExpr(params, expr)
     ),
     combine3(
@@ -281,7 +326,7 @@ const parseIndex = combine3(
 
 const parseIdOrLambda = combine(
     tId,
-    trai(ts('=>'), parseExpr, _2),
+    trai(to('=>'), parseExpr, _2),
 
     (id, expr) => expr ? mkLambdaExpr([id], expr)
                        : mkVarExpr(id)
@@ -331,6 +376,15 @@ function tk(s: string) {
 // string token
 function ts(s: string) {
     return t(string(s));
+}
+
+// operator token
+function to(s: string) {
+    const sx   = pconst(s);
+    const fail = pfail<StringMismatch>({ kind: 'pc_error', code: 'string_mismatch', expected: s });
+
+    return t(inspect(parseOperatorRaw, op => op === s ? sx
+                                                      : fail));
 }
 
 function _1<T>(x: T) {
