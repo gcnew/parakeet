@@ -12,11 +12,7 @@ export {
 
     any, eos, not, terminated, pconst, pfail,
 
-    alt, alt3, alt4, genericAlt,
-
-    choice, choice3, choice4, genericChoice,
-
-    combine, combine3, combine4, genericCombine,
+    genericAlt, genericChoice, genericCombine,
 
     /* monadic binds */
     recover, inspect,
@@ -131,37 +127,6 @@ function not<M, S extends ParserStream<M>, E, T>(p: Parser<M, S, E, T>): Parser<
     };
 }
 
-function alt<M, S extends ParserStream<M>, E, A, B>(
-    p1: Parser<M, S, Any, A>,
-    p2: Parser<M, S, E, B>
-): Parser<M, S, E, A|B> {
-    return (st) => {
-        const r1 = p1(st);
-        if (r1.kind !== 'left') {
-            return r1;
-        }
-
-        return p2(st);
-    };
-}
-
-function alt3<M, S extends ParserStream<M>, E, A, B, C>(
-    p1: Parser<M, S, Any, A>,
-    p2: Parser<M, S, Any, B>,
-    p3: Parser<M, S, E, C>
-): Parser<M, S, E, A|B|C> {
-    return genericAlt<M, S, any, A|B|C>([ p1, p2, p3 ]);
-}
-
-function alt4<M, S extends ParserStream<M>, E, A, B, C, D>(
-    p1: Parser<M, S, Any, A>,
-    p2: Parser<M, S, Any, B>,
-    p3: Parser<M, S, Any, C>,
-    p4: Parser<M, S, E,  D>
-): Parser<M, S, E, A|B|C|D> {
-    return genericAlt<M, S, any, A|B|C|D>([ p1, p2, p3, p4 ]);
-}
-
 function genericAlt<M, S extends ParserStream<M>, E, T>(parsers: Parser<M, S, E, T>[]): Parser<M, S, E, T> {
     if (!parsers.length) {
         throw new Error('No parsers provided');
@@ -183,33 +148,6 @@ function genericAlt<M, S extends ParserStream<M>, E, T>(parsers: Parser<M, S, E,
 
         return err!;
     };
-}
-
-function combine<M, S extends ParserStream<M>, E1, E2, A, B, C>(
-    p1: Parser<M, S, E1, A>,
-    p2: Parser<M, S, E2, B>,
-    f: (a: A, b: B) => C
-): Parser<M, S, E1|E2, C> {
-    return genericCombine<M, S, E1|E2, A|B, C>([ p1, p2 ], f);
-}
-
-function combine3<M, S extends ParserStream<M>, E1, E2, E3, A, B, C, D>(
-    p1: Parser<M, S, E1, A>,
-    p2: Parser<M, S, E2, B>,
-    p3: Parser<M, S, E3, C>,
-    f: (a: A, b: B, c: C) => D
-): Parser<M, S, E1|E2|E3, D> {
-    return genericCombine<M, S, E1|E2|E3, A|B|C, D>([ p1, p2, p3 ], f);
-}
-
-function combine4<M, S extends ParserStream<M>, E1, E2, E3, E4, A, B, C, D, F>(
-    p1: Parser<M, S, E1, A>,
-    p2: Parser<M, S, E2, B>,
-    p3: Parser<M, S, E3, C>,
-    p4: Parser<M, S, E4, D>,
-    f: (a: A, b: B, c: C, d: D) => F
-): Parser<M, S, E1|E2|E3|E4, F> {
-    return genericCombine<M, S, E1|E2|E3|E4, A|B|C|D, F>([ p1, p2, p3, p4 ], f);
 }
 
 function genericCombine<M, S extends ParserStream<M>, E, A, B>(
@@ -385,30 +323,6 @@ function satisfy<M, S extends ParserStream<M>, E>(f: (x: M) => boolean, e: E): P
     };
 }
 
-function choice<M, S extends ParserStream<M>, E1, E2, E3, T1, T2>(
-    p1: [Parser<M, S, Any, Any>, Parser<M, S, E2, T1>],
-    p2: [Parser<M, S, E1,  Any>, Parser<M, S, E3, T2>]
-): Parser<M, S, E1|E2|E3, T1|T2> {
-    return genericChoice<M, S, any, E2|E3, T1|T2>([p1, p2]);
-}
-
-function choice3<M, S extends ParserStream<M>, E1, E2, E3, E4, T1, T2, T3>(
-    p1: [Parser<M, S, Any, Any>, Parser<M, S, E2, T1>],
-    p2: [Parser<M, S, Any, Any>, Parser<M, S, E3, T2>],
-    p3: [Parser<M, S, E1,  Any>, Parser<M, S, E4, T3>]
-): Parser<M, S, E1|E2|E3|E4, T1|T2|T3> {
-    return genericChoice<M, S, any, E2|E3|E4, T1|T2|T3>([p1, p2, p3]);
-}
-
-function choice4<M, S extends ParserStream<M>, E1, E2, E3, E4, E5, T1, T2, T3, T4>(
-    p1: [Parser<M, S, Any, Any>, Parser<M, S, E2, T1>],
-    p2: [Parser<M, S, Any, Any>, Parser<M, S, E3, T2>],
-    p3: [Parser<M, S, Any, Any>, Parser<M, S, E4, T3>],
-    p4: [Parser<M, S, E1,  Any>, Parser<M, S, E5, T4>]
-): Parser<M, S, E1|E2|E3|E4|E5, T1|T2|T3|T4> {
-    return genericChoice<M, S, any, E2|E3|E4|E5, T1|T2|T3|T4>([p1, p2, p3, p4]);
-}
-
 function genericChoice<M, S extends ParserStream<M>, E1, E2, T>(
     parsers: [Parser<M, S, E1, Any>, Parser<M, S, E2, T>][]
 ): Parser<M, S, E1|E2, T> {
@@ -433,4 +347,224 @@ function genericChoice<M, S extends ParserStream<M>, E1, E2, T>(
 
         return ret!;
     };
+}
+
+
+/* ======= GENERATED ======== */
+
+export function alt<M, S extends ParserStream<M>, E, T1, T2>(
+    p1: Parser<M, S, Any, T1>,
+    p2: Parser<M, S, E, T2>
+): Parser<M, S, E, T1|T2> {
+    return genericAlt<M, S, any, T1|T2>([p1, p2]);
+}
+
+export function alt3<M, S extends ParserStream<M>, E, T1, T2, T3>(
+    p1: Parser<M, S, Any, T1>,
+    p2: Parser<M, S, Any, T2>,
+    p3: Parser<M, S, E, T3>
+): Parser<M, S, E, T1|T2|T3> {
+    return genericAlt<M, S, any, T1|T2|T3>([p1, p2, p3]);
+}
+
+export function alt4<M, S extends ParserStream<M>, E, T1, T2, T3, T4>(
+    p1: Parser<M, S, Any, T1>,
+    p2: Parser<M, S, Any, T2>,
+    p3: Parser<M, S, Any, T3>,
+    p4: Parser<M, S, E, T4>
+): Parser<M, S, E, T1|T2|T3|T4> {
+    return genericAlt<M, S, any, T1|T2|T3|T4>([p1, p2, p3, p4]);
+}
+
+export function alt5<M, S extends ParserStream<M>, E, T1, T2, T3, T4, T5>(
+    p1: Parser<M, S, Any, T1>,
+    p2: Parser<M, S, Any, T2>,
+    p3: Parser<M, S, Any, T3>,
+    p4: Parser<M, S, Any, T4>,
+    p5: Parser<M, S, E, T5>
+): Parser<M, S, E, T1|T2|T3|T4|T5> {
+    return genericAlt<M, S, any, T1|T2|T3|T4|T5>([p1, p2, p3, p4, p5]);
+}
+
+export function alt6<M, S extends ParserStream<M>, E, T1, T2, T3, T4, T5, T6>(
+    p1: Parser<M, S, Any, T1>,
+    p2: Parser<M, S, Any, T2>,
+    p3: Parser<M, S, Any, T3>,
+    p4: Parser<M, S, Any, T4>,
+    p5: Parser<M, S, Any, T5>,
+    p6: Parser<M, S, E, T6>
+): Parser<M, S, E, T1|T2|T3|T4|T5|T6> {
+    return genericAlt<M, S, any, T1|T2|T3|T4|T5|T6>([p1, p2, p3, p4, p5, p6]);
+}
+
+export function alt7<M, S extends ParserStream<M>, E, T1, T2, T3, T4, T5, T6, T7>(
+    p1: Parser<M, S, Any, T1>,
+    p2: Parser<M, S, Any, T2>,
+    p3: Parser<M, S, Any, T3>,
+    p4: Parser<M, S, Any, T4>,
+    p5: Parser<M, S, Any, T5>,
+    p6: Parser<M, S, Any, T6>,
+    p7: Parser<M, S, E, T7>
+): Parser<M, S, E, T1|T2|T3|T4|T5|T6|T7> {
+    return genericAlt<M, S, any, T1|T2|T3|T4|T5|T6|T7>([p1, p2, p3, p4, p5, p6, p7]);
+}
+
+export function alt8<M, S extends ParserStream<M>, E, T1, T2, T3, T4, T5, T6, T7, T8>(
+    p1: Parser<M, S, Any, T1>,
+    p2: Parser<M, S, Any, T2>,
+    p3: Parser<M, S, Any, T3>,
+    p4: Parser<M, S, Any, T4>,
+    p5: Parser<M, S, Any, T5>,
+    p6: Parser<M, S, Any, T6>,
+    p7: Parser<M, S, Any, T7>,
+    p8: Parser<M, S, E, T8>
+): Parser<M, S, E, T1|T2|T3|T4|T5|T6|T7|T8> {
+    return genericAlt<M, S, any, T1|T2|T3|T4|T5|T6|T7|T8>([p1, p2, p3, p4, p5, p6, p7, p8]);
+}
+
+export function combine<M, S extends ParserStream<M>, E1, E2, T1, T2, T3>(
+    p1: Parser<M, S, E1, T1>,
+    p2: Parser<M, S, E2, T2>,
+    f: (a1: T1, a2: T2) => T3
+): Parser<M, S, E1|E2, T3> {
+    return genericCombine<M, S, E1|E2, T1|T2, T3>([p1, p2], f);
+}
+
+export function combine3<M, S extends ParserStream<M>, E1, E2, E3, T1, T2, T3, T4>(
+    p1: Parser<M, S, E1, T1>,
+    p2: Parser<M, S, E2, T2>,
+    p3: Parser<M, S, E3, T3>,
+    f: (a1: T1, a2: T2, a3: T3) => T4
+): Parser<M, S, E1|E2|E3, T4> {
+    return genericCombine<M, S, E1|E2|E3, T1|T2|T3, T4>([p1, p2, p3], f);
+}
+
+export function combine4<M, S extends ParserStream<M>, E1, E2, E3, E4, T1, T2, T3, T4, T5>(
+    p1: Parser<M, S, E1, T1>,
+    p2: Parser<M, S, E2, T2>,
+    p3: Parser<M, S, E3, T3>,
+    p4: Parser<M, S, E4, T4>,
+    f: (a1: T1, a2: T2, a3: T3, a4: T4) => T5
+): Parser<M, S, E1|E2|E3|E4, T5> {
+    return genericCombine<M, S, E1|E2|E3|E4, T1|T2|T3|T4, T5>([p1, p2, p3, p4], f);
+}
+
+export function combine5<M, S extends ParserStream<M>, E1, E2, E3, E4, E5, T1, T2, T3, T4, T5, T6>(
+    p1: Parser<M, S, E1, T1>,
+    p2: Parser<M, S, E2, T2>,
+    p3: Parser<M, S, E3, T3>,
+    p4: Parser<M, S, E4, T4>,
+    p5: Parser<M, S, E5, T5>,
+    f: (a1: T1, a2: T2, a3: T3, a4: T4, a5: T5) => T6
+): Parser<M, S, E1|E2|E3|E4|E5, T6> {
+    return genericCombine<M, S, E1|E2|E3|E4|E5, T1|T2|T3|T4|T5, T6>([p1, p2, p3, p4, p5], f);
+}
+
+export function combine6<M, S extends ParserStream<M>, E1, E2, E3, E4, E5, E6, T1, T2, T3, T4, T5, T6, T7>(
+    p1: Parser<M, S, E1, T1>,
+    p2: Parser<M, S, E2, T2>,
+    p3: Parser<M, S, E3, T3>,
+    p4: Parser<M, S, E4, T4>,
+    p5: Parser<M, S, E5, T5>,
+    p6: Parser<M, S, E6, T6>,
+    f: (a1: T1, a2: T2, a3: T3, a4: T4, a5: T5, a6: T6) => T7
+): Parser<M, S, E1|E2|E3|E4|E5|E6, T7> {
+    return genericCombine<M, S, E1|E2|E3|E4|E5|E6, T1|T2|T3|T4|T5|T6, T7>([p1, p2, p3, p4, p5, p6], f);
+}
+
+export function combine7<M, S extends ParserStream<M>, E1, E2, E3, E4, E5, E6, E7, T1, T2, T3, T4, T5, T6, T7, T8>(
+    p1: Parser<M, S, E1, T1>,
+    p2: Parser<M, S, E2, T2>,
+    p3: Parser<M, S, E3, T3>,
+    p4: Parser<M, S, E4, T4>,
+    p5: Parser<M, S, E5, T5>,
+    p6: Parser<M, S, E6, T6>,
+    p7: Parser<M, S, E7, T7>,
+    f: (a1: T1, a2: T2, a3: T3, a4: T4, a5: T5, a6: T6, a7: T7) => T8
+): Parser<M, S, E1|E2|E3|E4|E5|E6|E7, T8> {
+    return genericCombine<M, S, E1|E2|E3|E4|E5|E6|E7, T1|T2|T3|T4|T5|T6|T7, T8>([p1, p2, p3, p4, p5, p6, p7], f);
+}
+
+export function combine8<M, S extends ParserStream<M>, E1, E2, E3, E4, E5, E6, E7, E8, T1, T2, T3, T4, T5, T6, T7, T8, T9>(
+    p1: Parser<M, S, E1, T1>,
+    p2: Parser<M, S, E2, T2>,
+    p3: Parser<M, S, E3, T3>,
+    p4: Parser<M, S, E4, T4>,
+    p5: Parser<M, S, E5, T5>,
+    p6: Parser<M, S, E6, T6>,
+    p7: Parser<M, S, E7, T7>,
+    p8: Parser<M, S, E8, T8>,
+    f: (a1: T1, a2: T2, a3: T3, a4: T4, a5: T5, a6: T6, a7: T7, a8: T8) => T9
+): Parser<M, S, E1|E2|E3|E4|E5|E6|E7|E8, T9> {
+    return genericCombine<M, S, E1|E2|E3|E4|E5|E6|E7|E8, T1|T2|T3|T4|T5|T6|T7|T8, T9>([p1, p2, p3, p4, p5, p6, p7, p8], f);
+}
+
+export function choice<M, S extends ParserStream<M>, E1, E2, E3, T1, T2>(
+    p1: [Parser<M, S, Any, Any>, Parser<M, S, E1, T1>],
+    p2: [Parser<M, S, E3, Any>, Parser<M, S, E2, T2>]
+): Parser<M, S, E1|E2|E3, T1|T2> {
+    return genericChoice<M, S, any, E1|E2, T1|T2>([p1, p2]);
+}
+
+export function choice3<M, S extends ParserStream<M>, E1, E2, E3, E4, T1, T2, T3>(
+    p1: [Parser<M, S, Any, Any>, Parser<M, S, E1, T1>],
+    p2: [Parser<M, S, Any, Any>, Parser<M, S, E2, T2>],
+    p3: [Parser<M, S, E4, Any>, Parser<M, S, E3, T3>]
+): Parser<M, S, E1|E2|E3|E4, T1|T2|T3> {
+    return genericChoice<M, S, any, E1|E2|E3, T1|T2|T3>([p1, p2, p3]);
+}
+
+export function choice4<M, S extends ParserStream<M>, E1, E2, E3, E4, E5, T1, T2, T3, T4>(
+    p1: [Parser<M, S, Any, Any>, Parser<M, S, E1, T1>],
+    p2: [Parser<M, S, Any, Any>, Parser<M, S, E2, T2>],
+    p3: [Parser<M, S, Any, Any>, Parser<M, S, E3, T3>],
+    p4: [Parser<M, S, E5, Any>, Parser<M, S, E4, T4>]
+): Parser<M, S, E1|E2|E3|E4|E5, T1|T2|T3|T4> {
+    return genericChoice<M, S, any, E1|E2|E3|E4, T1|T2|T3|T4>([p1, p2, p3, p4]);
+}
+
+export function choice5<M, S extends ParserStream<M>, E1, E2, E3, E4, E5, E6, T1, T2, T3, T4, T5>(
+    p1: [Parser<M, S, Any, Any>, Parser<M, S, E1, T1>],
+    p2: [Parser<M, S, Any, Any>, Parser<M, S, E2, T2>],
+    p3: [Parser<M, S, Any, Any>, Parser<M, S, E3, T3>],
+    p4: [Parser<M, S, Any, Any>, Parser<M, S, E4, T4>],
+    p5: [Parser<M, S, E6, Any>, Parser<M, S, E5, T5>]
+): Parser<M, S, E1|E2|E3|E4|E5|E6, T1|T2|T3|T4|T5> {
+    return genericChoice<M, S, any, E1|E2|E3|E4|E5, T1|T2|T3|T4|T5>([p1, p2, p3, p4, p5]);
+}
+
+export function choice6<M, S extends ParserStream<M>, E1, E2, E3, E4, E5, E6, E7, T1, T2, T3, T4, T5, T6>(
+    p1: [Parser<M, S, Any, Any>, Parser<M, S, E1, T1>],
+    p2: [Parser<M, S, Any, Any>, Parser<M, S, E2, T2>],
+    p3: [Parser<M, S, Any, Any>, Parser<M, S, E3, T3>],
+    p4: [Parser<M, S, Any, Any>, Parser<M, S, E4, T4>],
+    p5: [Parser<M, S, Any, Any>, Parser<M, S, E5, T5>],
+    p6: [Parser<M, S, E7, Any>, Parser<M, S, E6, T6>]
+): Parser<M, S, E1|E2|E3|E4|E5|E6|E7, T1|T2|T3|T4|T5|T6> {
+    return genericChoice<M, S, any, E1|E2|E3|E4|E5|E6, T1|T2|T3|T4|T5|T6>([p1, p2, p3, p4, p5, p6]);
+}
+
+export function choice7<M, S extends ParserStream<M>, E1, E2, E3, E4, E5, E6, E7, E8, T1, T2, T3, T4, T5, T6, T7>(
+    p1: [Parser<M, S, Any, Any>, Parser<M, S, E1, T1>],
+    p2: [Parser<M, S, Any, Any>, Parser<M, S, E2, T2>],
+    p3: [Parser<M, S, Any, Any>, Parser<M, S, E3, T3>],
+    p4: [Parser<M, S, Any, Any>, Parser<M, S, E4, T4>],
+    p5: [Parser<M, S, Any, Any>, Parser<M, S, E5, T5>],
+    p6: [Parser<M, S, Any, Any>, Parser<M, S, E6, T6>],
+    p7: [Parser<M, S, E8, Any>, Parser<M, S, E7, T7>]
+): Parser<M, S, E1|E2|E3|E4|E5|E6|E7|E8, T1|T2|T3|T4|T5|T6|T7> {
+    return genericChoice<M, S, any, E1|E2|E3|E4|E5|E6|E7, T1|T2|T3|T4|T5|T6|T7>([p1, p2, p3, p4, p5, p6, p7]);
+}
+
+export function choice8<M, S extends ParserStream<M>, E1, E2, E3, E4, E5, E6, E7, E8, E9, T1, T2, T3, T4, T5, T6, T7, T8>(
+    p1: [Parser<M, S, Any, Any>, Parser<M, S, E1, T1>],
+    p2: [Parser<M, S, Any, Any>, Parser<M, S, E2, T2>],
+    p3: [Parser<M, S, Any, Any>, Parser<M, S, E3, T3>],
+    p4: [Parser<M, S, Any, Any>, Parser<M, S, E4, T4>],
+    p5: [Parser<M, S, Any, Any>, Parser<M, S, E5, T5>],
+    p6: [Parser<M, S, Any, Any>, Parser<M, S, E6, T6>],
+    p7: [Parser<M, S, Any, Any>, Parser<M, S, E7, T7>],
+    p8: [Parser<M, S, E9, Any>, Parser<M, S, E8, T8>]
+): Parser<M, S, E1|E2|E3|E4|E5|E6|E7|E8|E9, T1|T2|T3|T4|T5|T6|T7|T8> {
+    return genericChoice<M, S, any, E1|E2|E3|E4|E5|E6|E7|E8, T1|T2|T3|T4|T5|T6|T7|T8>([p1, p2, p3, p4, p5, p6, p7, p8]);
 }
