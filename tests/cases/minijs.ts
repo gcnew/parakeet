@@ -10,8 +10,10 @@ import {
 import {
     EosExpected,
 
-    map, pwhile, not, eos, alt, many, peek, maybe, trai, pconst, pfail, combine, combine3,
-    choice, choice3, choice4, genericChoice, inspect, satisfy, separated, any, pair,
+    pair,
+
+    map, pwhile, not, eos, many, peek, maybe, trai, pconst, pfail, inspect, satisfy, separated, any,
+    alt, alt3, combine, combine3, choice, choice3, choice4, choice6, choice8,
 
     oneOrMore as many1
 } from '../../src/parser_combinators'
@@ -30,19 +32,23 @@ interface IfStatement  { kind: 'if_statement',  cond: Expr,   ifTrue: BlockState
 
 
 /* Expression types */
-interface MemberExpr { kind: 'member_expr', obj: Expr,        prop:  string }
-interface IndexExpr  { kind: 'index_expr',  obj: Expr,        index: Expr   }
-interface CallExpr   { kind: 'call_expr',   fn:   Expr,       args:  Expr[] }
-interface LambdaExpr { kind: 'lambda_expr', params: string[], body:  Expr   }
+interface MemberExpr  { kind: 'member_expr', obj: Expr,        prop:  string }
+interface IndexExpr   { kind: 'index_expr',  obj: Expr,        index: Expr   }
+interface CallExpr    { kind: 'call_expr',   fn:   Expr,       args:  Expr[] }
+interface LambdaExpr  { kind: 'lambda_expr', params: string[], body:  Expr   }
 
-interface VarExpr    { kind: 'var_expr',    name:  string             }
+interface UnaryExpr   { kind: 'unary_expr',   op:   string, expr:   Expr }
+interface BinaryExpr  { kind: 'binary_expr',  op:   string, left:   Expr, right:   Expr }
+interface TernaryExpr { kind: 'ternary_expr', cond: Expr,   ifTrue: Expr, ifFalse: Expr }
+
+interface VarExpr     { kind: 'var_expr',    name:  string           }
 
 /* Literals */
-interface NumExpr    { kind: 'num_expr',    value: number             }
-interface StrExpr    { kind: 'str_expr',    value: string             }
-interface BoolExpr   { kind: 'bool_expr',   value: boolean            }
-interface ArrayExpr  { kind: 'array_expr',  value: Expr[]             }
-interface ObjectExpr { kind: 'object_expr', value: [string, Expr][]   }
+interface NumExpr     { kind: 'num_expr',    value: number           }
+interface StrExpr     { kind: 'str_expr',    value: string           }
+interface BoolExpr    { kind: 'bool_expr',   value: boolean          }
+interface ArrayExpr   { kind: 'array_expr',  value: Expr[]           }
+interface ObjectExpr  { kind: 'object_expr', value: [string, Expr][] }
 
 
 /* Unions */
@@ -61,6 +67,9 @@ type Expr      = Literal
                | MemberExpr
                | IndexExpr
                | CallExpr
+               | UnaryExpr
+               | BinaryExpr
+               | TernaryExpr
 
 type Program = Statement[]
 
@@ -132,6 +141,19 @@ function mkIndexExpr(obj: Expr, index: Expr): IndexExpr {
     return { kind: 'index_expr', obj, index };
 }
 
+function mkUnary(op: string, expr: Expr): UnaryExpr {
+    return { kind: 'unary_expr', op, expr };
+}
+
+function mkBinary(op: string, left: Expr, right: Expr): BinaryExpr {
+    return { kind: 'binary_expr', op, left, right };
+}
+
+function mkTernary(cond: Expr, ifTrue: Expr, ifFalse: Expr): TernaryExpr {
+    return { kind: 'ternary_expr', cond, ifTrue, ifFalse };
+}
+
+
 /* Parsers */
 const skipWs = many(ws);
 
@@ -147,10 +169,11 @@ const invalid_operator = pfail<InvalidOperator>({
 // Can't end with:     /
 // Reserved:           ? . .. : :: = /= === => & -> <- # $ @ - + * \ | / ! ~ % > <
 // Unary:              - + ! ~
-const operatorChar = oneOf('+-*/\\|~!=<>.?:#$@%');
-const parseOperatorRaw = alt(
-    char('!'),
-    inspect(many1(operatorChar), xs => {
+const operatorChar = oneOf('+-*/\\|&~^!=<>.?:#$@%');
+const tOperator = alt3(
+    ts('!'),
+    ts('/'),
+    t(inspect(many1(operatorChar), xs => {
         const op = xs.join('');
 
         if (op[0] === '.') {
@@ -166,11 +189,32 @@ const parseOperatorRaw = alt(
         }
 
         return pconst(op);
-    })
+    }))
 );
 
-const parseExpr: StringParser<StringMismatch|AsciiAlphaExpected|DigitExpected, Expr> = combine(
-    (st: TextStream) => parsePrimary(st),
+const UNARY = '!-+~';
+const tUnary = inspect(tOperator, op => {
+    if (op.length === 1 && UNARY.indexOf(op) !== -1) {
+        return pconst(op);
+    }
+
+    return invalid_operator;
+});
+
+const NON_BINARY = '.!?:~';
+const tBinary = inspect(tOperator, op => {
+    if (op.length === 1 && NON_BINARY.indexOf(op) !== -1) {
+        return invalid_operator;
+    }
+
+    return pconst(op);
+});
+
+const parseExpr: StringParser<
+    StringMismatch|AsciiAlphaExpected|DigitExpected|CharNotExpected|InvalidOperator,
+    Expr
+> = combine(
+    (st: TextStream) => parseTernary(st),
     many(
         choice3(
             [ peek(char('(')), map((st: TextStream) => parseCallArgs(st), x => tagged('call', x))   ],
@@ -188,16 +232,10 @@ const parseExpr: StringParser<StringMismatch|AsciiAlphaExpected|DigitExpected, E
 );
 
 const parseStatement: StringParser<
-    StringMismatch|AsciiAlphaExpected|DigitExpected|CharNotExpected|InvalidOperator,
+    InvalidOperator|DigitExpected|AsciiAlphaExpected|StringMismatch|CharNotExpected,
     Statement
 > = combine(
-    genericChoice<
-        char,
-        TextStream,
-        StringMismatch|AsciiAlphaExpected,
-        StringMismatch|AsciiAlphaExpected|DigitExpected|CharNotExpected|InvalidOperator,
-        Statement
-    >([
+    choice6(
         [ tk('const'),      st => parseConstDecl(st)          ],
         [ tk('if'),         st => parseIf(st)                 ],
         [ tk('function'),   st => parseFunctionDecl(st)       ],
@@ -206,7 +244,7 @@ const parseStatement: StringParser<
         [ peek(char('{')),  st => parseBlock(st)              ],
 
         [ pconst(true),     map(parseExpr, mkExprStatement)   ]
-    ]),
+    ),
     maybe(ts(';')),
 
     _1
@@ -332,13 +370,7 @@ const parseIdOrLambda = combine(
                        : mkVarExpr(id)
 );
 
-const parsePrimary = genericChoice<
-    char,
-    TextStream,
-    AsciiAlphaExpected|StringMismatch|DigitExpected,
-    StringMismatch|AsciiAlphaExpected|DigitExpected,
-    Expr
->([
+const parsePrimary = choice8(
     [ peek(char('\'')),  map(tStringLit, mkStrExpr)         ],
     [ peek(char('[')),   parseArray                         ],
     [ peek(char('{')),   parseObject                        ],
@@ -347,7 +379,92 @@ const parsePrimary = genericChoice<
     [ tk('true'),        pconst(mkBoolExpr(true))           ],
     [ tk('false'),       pconst(mkBoolExpr(false))          ],
     [ pconst(true),      parseIdOrLambda                    ]
-]);
+);
+
+const parseUnary = combine(
+    many(tUnary),
+    parsePrimary,
+
+    (ops, expr) => ops.reduceRight((expr, op) => mkUnary(op, expr), expr)
+);
+
+const OPERATOR_TABLE: { [key: string]: number|undefined } = {
+    '||':   5,
+    '&&':  10,
+    '|':   15,
+    '^':   20,
+    '&':   25,
+    '===': 30, '!==': 30,
+    '<':   35, '<=':  35, '>':   35, '>=': 35,
+    '<<':  40, '>>':  40, '>>>': 40,
+    '+':   45, '-':   45,
+    '*':   50, '/':   50, '%':   50
+};
+
+function getPrecedenceStrict(op: string) {
+    if (!OPERATOR_TABLE[op]) {
+        throw new Error(`Inavlid operator: ${op}`);
+    }
+
+    return OPERATOR_TABLE[op]!;
+}
+
+function getPrecedenceLoose(op: string) {
+    return OPERATOR_TABLE[op] || 1;
+}
+
+let getPrecedence = getPrecedenceStrict;
+
+function parsePrecedenced(expr: Expr, rest: [string, Expr][]): Expr {
+    const opStack = [];
+    const exprStack = [expr];
+
+    for (const [op, e] of rest) {
+        const prec = getPrecedence(op);
+
+        while (opStack.length && getPrecedence(opStack[opStack.length - 1])! >= prec) {
+            const r = exprStack.pop();
+            const l = exprStack.pop();
+
+            exprStack.push(mkBinary(opStack.pop()!, l!, r!));
+        }
+
+        opStack.push(op);
+        exprStack.push(e);
+    }
+
+    while (opStack.length) {
+        const r = exprStack.pop();
+        const l = exprStack.pop();
+
+        exprStack.push(mkBinary(opStack.pop()!, l!, r!));
+    }
+
+    assert(exprStack.length === 1);
+    return exprStack[0];
+}
+
+const parseBinary = combine(
+    parseUnary,
+    many(
+        combine(tBinary, parseUnary, pair)
+    ),
+
+    parsePrecedenced
+);
+
+const parseTernary = combine(
+    parseBinary,
+    trai(
+        to('?'),
+        combine3(parseExpr, to(':'), parseExpr, (ifTrue, _, ifFalse) => pair(ifTrue, ifFalse)),
+
+        _2
+    ),
+
+    (cond, pair) => pair ? mkTernary(cond, pair[0], pair[1])
+                         : cond
+);
 
 const parseProgram = combine(
     skipWs,
@@ -356,7 +473,7 @@ const parseProgram = combine(
         parseStatement
     ),
 
-    _2
+    (_, prog: Program) => prog
 );
 
 // token
@@ -383,8 +500,8 @@ function to(s: string) {
     const sx   = pconst(s);
     const fail = pfail<StringMismatch>({ kind: 'pc_error', code: 'string_mismatch', expected: s });
 
-    return t(inspect(parseOperatorRaw, op => op === s ? sx
-                                                      : fail));
+    return inspect(tOperator, op => op === s ? sx
+                                             : fail);
 }
 
 function _1<T>(x: T) {
@@ -401,6 +518,12 @@ function tagged<T extends string, V>(tag: T, value: V) {
 
 function assertNever(x: never): never {
     throw new Error(`ASSERT: never expected: ${x}`);
+}
+
+function assert(cond: boolean, msg?: string) {
+    if (!cond) {
+        throw new Error(msg || 'Assertion failed!');
+    }
 }
 
 test(parseProgram,
@@ -445,4 +568,13 @@ test(parseProgram, `(1).toString()`);
 test(parseProgram, `'hello'.length`);
 test(parseProgram, `[1, 2, 3].map(_ => true)`);
 test(parseProgram, `({ key: 'value', 'prop': 5 })`);
-test(parseProgram, `const x = [1, 2, 3]; x[5];`)
+test(parseProgram, `const x = [1, 2, 3]; x[5];`);
+test(parseProgram, `1 + 2 + 3 * 4;`);
+test(parseProgram, `- !-1 || 3 && 1 + 2`);
+
+test(parseProgram, `true ? 1 : 2`);
+test(parseProgram, `a || b ? a ? 1 * 2 : 'hello' : b ? f(10) : o.p`);
+test(parseProgram, `(true ? false : true) ? 'no' : 'yes'`);
+
+getPrecedence = getPrecedenceLoose;
+test(parseProgram, `f >>= g >>= x => 5`);

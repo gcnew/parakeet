@@ -683,3 +683,330 @@
         }
     ]
 }
+
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "expr_statement",
+                "expr": {
+                    "kind": "binary_expr",
+                    "op": "+",
+                    "left": {
+                        "kind": "binary_expr",
+                        "op": "+",
+                        "left": {
+                            "kind": "num_expr",
+                            "value": 1
+                        },
+                        "right": {
+                            "kind": "num_expr",
+                            "value": 2
+                        }
+                    },
+                    "right": {
+                        "kind": "binary_expr",
+                        "op": "*",
+                        "left": {
+                            "kind": "num_expr",
+                            "value": 3
+                        },
+                        "right": {
+                            "kind": "num_expr",
+                            "value": 4
+                        }
+                    }
+                }
+            }
+        ],
+        {
+            "source": "1 + 2 + 3 * 4;",
+            "offset": 14,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "1 + 2 + 3 * 4;"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "expr_statement",
+                "expr": {
+                    "kind": "binary_expr",
+                    "op": "||",
+                    "left": {
+                        "kind": "unary_expr",
+                        "op": "-",
+                        "expr": {
+                            "kind": "unary_expr",
+                            "op": "!",
+                            "expr": {
+                                "kind": "unary_expr",
+                                "op": "-",
+                                "expr": {
+                                    "kind": "num_expr",
+                                    "value": 1
+                                }
+                            }
+                        }
+                    },
+                    "right": {
+                        "kind": "binary_expr",
+                        "op": "&&",
+                        "left": {
+                            "kind": "num_expr",
+                            "value": 3
+                        },
+                        "right": {
+                            "kind": "binary_expr",
+                            "op": "+",
+                            "left": {
+                                "kind": "num_expr",
+                                "value": 1
+                            },
+                            "right": {
+                                "kind": "num_expr",
+                                "value": 2
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        {
+            "source": "- !-1 || 3 && 1 + 2",
+            "offset": 19,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "- !-1 || 3 && 1 + 2"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "expr_statement",
+                "expr": {
+                    "kind": "ternary_expr",
+                    "cond": {
+                        "kind": "bool_expr",
+                        "value": true
+                    },
+                    "ifTrue": {
+                        "kind": "num_expr",
+                        "value": 1
+                    },
+                    "ifFalse": {
+                        "kind": "num_expr",
+                        "value": 2
+                    }
+                }
+            }
+        ],
+        {
+            "source": "true ? 1 : 2",
+            "offset": 12,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "true ? 1 : 2"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "expr_statement",
+                "expr": {
+                    "kind": "ternary_expr",
+                    "cond": {
+                        "kind": "binary_expr",
+                        "op": "||",
+                        "left": {
+                            "kind": "var_expr",
+                            "name": "a"
+                        },
+                        "right": {
+                            "kind": "var_expr",
+                            "name": "b"
+                        }
+                    },
+                    "ifTrue": {
+                        "kind": "ternary_expr",
+                        "cond": {
+                            "kind": "var_expr",
+                            "name": "a"
+                        },
+                        "ifTrue": {
+                            "kind": "binary_expr",
+                            "op": "*",
+                            "left": {
+                                "kind": "num_expr",
+                                "value": 1
+                            },
+                            "right": {
+                                "kind": "num_expr",
+                                "value": 2
+                            }
+                        },
+                        "ifFalse": {
+                            "kind": "str_expr",
+                            "value": "hello"
+                        }
+                    },
+                    "ifFalse": {
+                        "kind": "ternary_expr",
+                        "cond": {
+                            "kind": "var_expr",
+                            "name": "b"
+                        },
+                        "ifTrue": {
+                            "kind": "call_expr",
+                            "fn": {
+                                "kind": "var_expr",
+                                "name": "f"
+                            },
+                            "args": [
+                                {
+                                    "kind": "num_expr",
+                                    "value": 10
+                                }
+                            ]
+                        },
+                        "ifFalse": {
+                            "kind": "member_expr",
+                            "obj": {
+                                "kind": "var_expr",
+                                "name": "o"
+                            },
+                            "prop": "p"
+                        }
+                    }
+                }
+            }
+        ],
+        {
+            "source": "a || b ? a ? 1 * 2 : 'hello' : b ? f(10) : o.p",
+            "offset": 46,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "a || b ? a ? 1 * 2 : 'hello' : b ? f(10) : o.p"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "expr_statement",
+                "expr": {
+                    "kind": "ternary_expr",
+                    "cond": {
+                        "kind": "ternary_expr",
+                        "cond": {
+                            "kind": "bool_expr",
+                            "value": true
+                        },
+                        "ifTrue": {
+                            "kind": "bool_expr",
+                            "value": false
+                        },
+                        "ifFalse": {
+                            "kind": "bool_expr",
+                            "value": true
+                        }
+                    },
+                    "ifTrue": {
+                        "kind": "str_expr",
+                        "value": "no"
+                    },
+                    "ifFalse": {
+                        "kind": "str_expr",
+                        "value": "yes"
+                    }
+                }
+            }
+        ],
+        {
+            "source": "(true ? false : true) ? 'no' : 'yes'",
+            "offset": 36,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "(true ? false : true) ? 'no' : 'yes'"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "expr_statement",
+                "expr": {
+                    "kind": "binary_expr",
+                    "op": ">>=",
+                    "left": {
+                        "kind": "binary_expr",
+                        "op": ">>=",
+                        "left": {
+                            "kind": "var_expr",
+                            "name": "f"
+                        },
+                        "right": {
+                            "kind": "var_expr",
+                            "name": "g"
+                        }
+                    },
+                    "right": {
+                        "kind": "lambda_expr",
+                        "params": [
+                            "x"
+                        ],
+                        "body": {
+                            "kind": "num_expr",
+                            "value": 5
+                        }
+                    }
+                }
+            }
+        ],
+        {
+            "source": "f >>= g >>= x => 5",
+            "offset": 18,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "f >>= g >>= x => 5"
+                ]
+            ]
+        }
+    ]
+}
