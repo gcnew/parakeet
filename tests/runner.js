@@ -1,6 +1,5 @@
 
 const fs = require('fs');
-const path = require('path');
 
 const testUtil = requireCompiled('test_util');
 
@@ -8,12 +7,14 @@ const cases    = fs.readdirSync(__dirname + '/cases');
 const expected = trai(_ => fs.readdirSync(__dirname + '/expected'), []);
 
 function requireCompiled(path) {
-    try {
-        return require(__dirname + '/../build/tests/' + path);
-    } catch (_) {
+    const finalPath = __dirname + '/../build/tests/' + path;
+
+    if (!fs.existsSync(finalPath + '.js')) {
         console.error('Library not compiled: run tsc first');
         process.exit(1);
     }
+
+    return require(finalPath);
 }
 
 function trai(f, def) {
