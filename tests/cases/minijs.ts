@@ -12,8 +12,8 @@ import {
 
     pair,
 
-    map, pwhile, not, eos, many, peek, maybe, trai, pconst, pfail, inspect, satisfy, separated, any,
-    alt, alt3, combine, combine3, choice, choice3, choice4, choice6, choice8,
+    map, pwhile, not, eos, many, peek, maybe, trai, pconst, pfail, inspect, separated, any,
+    alt, alt3, combine, combine3, combine4, choice, choice3, choice4, choice6, choice7,
 
     oneOrMore as many1
 } from '../../src/parser_combinators'
@@ -41,18 +41,20 @@ interface UnaryExpr   { kind: 'unary_expr',   op:   string, expr:   Expr }
 interface BinaryExpr  { kind: 'binary_expr',  op:   string, left:   Expr, right:   Expr }
 interface TernaryExpr { kind: 'ternary_expr', cond: Expr,   ifTrue: Expr, ifFalse: Expr }
 
-interface VarExpr     { kind: 'var_expr',    name:  string           }
+interface VarExpr     { kind: 'var_expr',     name:  string           }
 
 /* Literals */
-interface NumExpr     { kind: 'num_expr',    value: number           }
-interface StrExpr     { kind: 'str_expr',    value: string           }
-interface BoolExpr    { kind: 'bool_expr',   value: boolean          }
-interface ArrayExpr   { kind: 'array_expr',  value: Expr[]           }
-interface ObjectExpr  { kind: 'object_expr', value: [string, Expr][] }
+interface NumExpr     { kind: 'num_expr',     value: number           }
+interface StrExpr     { kind: 'str_expr',     value: string           }
+interface BoolExpr    { kind: 'bool_expr',    value: boolean          }
+interface ArrayExpr   { kind: 'array_expr',   value: Expr[]           }
+interface ObjectExpr  { kind: 'object_expr',  value: [string, Expr][] }
+
+interface RegExpExpr  { kind: 'reg_exp_expr', pattern: string, flags: string }
 
 
 /* Unions */
-type Literal = NumExpr | StrExpr | BoolExpr | ArrayExpr | ObjectExpr
+type Literal = NumExpr | StrExpr | BoolExpr | ArrayExpr | ObjectExpr | RegExpExpr
 
 type Statement = FunctionDecl
                | ConstDecl
@@ -73,7 +75,8 @@ type Expr      = Literal
 
 type Program = Statement[]
 
-type InvalidOperator = { kind: 'pc_error', code: 'invalid_operator' }
+type InvalidOperator    = { kind: 'pc_error', code: 'invalid_operator'    }
+type UnterminatedRegExp = { kind: 'pc_error', code: 'unterminated_regexp' }
 
 
 /* Constructors */
@@ -123,6 +126,10 @@ function mkArrayExpr(value: Expr[]): ArrayExpr {
 
 function mkObjectExpr(value: [string, Expr][]): ObjectExpr {
     return { kind: 'object_expr', value };
+}
+
+function mkRegExpExpr(pattern: string, flags: string): RegExpExpr {
+    return { kind: 'reg_exp_expr', pattern, flags };
 }
 
 function mkVarExpr(name: string): VarExpr {
@@ -297,7 +304,7 @@ const tStringLit = combine3(
                               [ char('t'),    pconst('\t') ],
                               [ pconst(true), any ],
                           ) ],
-            [ peek(satisfy(c => c !== '\'', 'ignored') as StringParser<never, char>), any ]
+            [ peek(not(char('\''))), any ]
         )
     ),
     ts('\''),
@@ -362,6 +369,35 @@ const parseIndex = combine3(
     _2
 );
 
+const unterminated_regexp: UnterminatedRegExp = { kind: 'pc_error', code: 'unterminated_regexp' };
+
+const skipRange = combine3(
+    char('['),
+    many(choice(
+        [ char('\n'),           pfail(unterminated_regexp) as StringParser<UnterminatedRegExp, never> ], // TYH
+        [ peek(not(char(']'))), any                        as StringParser<EosExpected, char>         ]  // TYH
+    )),
+    char(']'),
+
+    (o, b, c) => o + b.join('') + c
+);
+
+const parseRegExp = combine4(
+    char('/'),
+    many(
+        choice4(
+            [ char('\n'),           pfail(unterminated_regexp) as StringParser<UnterminatedRegExp, never> ], // TYH
+            [ peek(char('[')),      skipRange                                 ],
+            [ peek(char('\\')),     combine(char('\\'), any, (x, y) => x + y) ],
+            [ peek(not(char('/'))), any                                       ]
+        )
+    ),
+    char('/'),
+    t(many(oneOf('igm'))),
+
+    (_1, pattern, _2, flags) => mkRegExpExpr(pattern.join(''), flags.join(''))
+)
+
 const parseIdOrLambda = combine(
     tId,
     trai(to('=>'), parseExpr, _2),
@@ -370,15 +406,18 @@ const parseIdOrLambda = combine(
                        : mkVarExpr(id)
 );
 
-const parsePrimary = choice8(
+const parsePrimary = choice7(
     [ peek(char('\'')),  map(tStringLit, mkStrExpr)         ],
     [ peek(char('[')),   parseArray                         ],
     [ peek(char('{')),   parseObject                        ],
     [ peek(char('(')),   parseLambdaOrPriority              ],
+    [ peek(char('/')),   parseRegExp                        ],
     [ peek(digit),       map(t(number), n => mkNumExpr(+n)) ],
-    [ tk('true'),        pconst(mkBoolExpr(true))           ],
-    [ tk('false'),       pconst(mkBoolExpr(false))          ],
-    [ pconst(true),      parseIdOrLambda                    ]
+    [ pconst(true),      alt3(
+                            map(tk('true'),  _ => mkBoolExpr(true)),
+                            map(tk('false'), _ => mkBoolExpr(false)),
+                            parseIdOrLambda
+                         ) ]
 );
 
 const parseUnary = combine(
@@ -575,6 +614,11 @@ test(parseProgram, `- !-1 || 3 && 1 + 2`);
 test(parseProgram, `true ? 1 : 2`);
 test(parseProgram, `a || b ? a ? 1 * 2 : 'hello' : b ? f(10) : o.p`);
 test(parseProgram, `(true ? false : true) ? 'no' : 'yes'`);
+test(parseProgram, `1 * 2 / 2 % 1`);
+test(parseProgram, `/^[a-zA-Z][a-zA-Z0-9]*$/.test(id)`);
+test(parseProgram, `/[/]/.test(id)`);
+test(parseProgram, `/'\\/'/img`);
+test(parseProgram, `'hello'.replace(/l/g, 'r')`);
 
 getPrecedence = getPrecedenceLoose;
 test(parseProgram, `f >>= g >>= x => 5`);

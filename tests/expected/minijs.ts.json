@@ -972,6 +972,202 @@
                 "kind": "expr_statement",
                 "expr": {
                     "kind": "binary_expr",
+                    "op": "%",
+                    "left": {
+                        "kind": "binary_expr",
+                        "op": "/",
+                        "left": {
+                            "kind": "binary_expr",
+                            "op": "*",
+                            "left": {
+                                "kind": "num_expr",
+                                "value": 1
+                            },
+                            "right": {
+                                "kind": "num_expr",
+                                "value": 2
+                            }
+                        },
+                        "right": {
+                            "kind": "num_expr",
+                            "value": 2
+                        }
+                    },
+                    "right": {
+                        "kind": "num_expr",
+                        "value": 1
+                    }
+                }
+            }
+        ],
+        {
+            "source": "1 * 2 / 2 % 1",
+            "offset": 13,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "1 * 2 / 2 % 1"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "expr_statement",
+                "expr": {
+                    "kind": "call_expr",
+                    "fn": {
+                        "kind": "member_expr",
+                        "obj": {
+                            "kind": "reg_exp_expr",
+                            "pattern": "^[a-zA-Z][a-zA-Z0-9]*$",
+                            "flags": ""
+                        },
+                        "prop": "test"
+                    },
+                    "args": [
+                        {
+                            "kind": "var_expr",
+                            "name": "id"
+                        }
+                    ]
+                }
+            }
+        ],
+        {
+            "source": "/^[a-zA-Z][a-zA-Z0-9]*$/.test(id)",
+            "offset": 33,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "/^[a-zA-Z][a-zA-Z0-9]*$/.test(id)"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "expr_statement",
+                "expr": {
+                    "kind": "call_expr",
+                    "fn": {
+                        "kind": "member_expr",
+                        "obj": {
+                            "kind": "reg_exp_expr",
+                            "pattern": "[/]",
+                            "flags": ""
+                        },
+                        "prop": "test"
+                    },
+                    "args": [
+                        {
+                            "kind": "var_expr",
+                            "name": "id"
+                        }
+                    ]
+                }
+            }
+        ],
+        {
+            "source": "/[/]/.test(id)",
+            "offset": 14,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "/[/]/.test(id)"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "expr_statement",
+                "expr": {
+                    "kind": "reg_exp_expr",
+                    "pattern": "'\\/'",
+                    "flags": "img"
+                }
+            }
+        ],
+        {
+            "source": "/'\\/'/img",
+            "offset": 9,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "/'\\/'/img"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "expr_statement",
+                "expr": {
+                    "kind": "call_expr",
+                    "fn": {
+                        "kind": "member_expr",
+                        "obj": {
+                            "kind": "str_expr",
+                            "value": "hello"
+                        },
+                        "prop": "replace"
+                    },
+                    "args": [
+                        {
+                            "kind": "reg_exp_expr",
+                            "pattern": "l",
+                            "flags": "g"
+                        },
+                        {
+                            "kind": "str_expr",
+                            "value": "r"
+                        }
+                    ]
+                }
+            }
+        ],
+        {
+            "source": "'hello'.replace(/l/g, 'r')",
+            "offset": 26,
+            "lineOffsetTable": [
+                [
+                    0,
+                    "'hello'.replace(/l/g, 'r')"
+                ]
+            ]
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "expr_statement",
+                "expr": {
+                    "kind": "binary_expr",
                     "op": ">>=",
                     "left": {
                         "kind": "binary_expr",
