@@ -162,7 +162,12 @@ function mkTernary(cond: Expr, ifTrue: Expr, ifFalse: Expr): TernaryExpr {
 
 
 /* Parsers */
-const skipWs = many(ws);
+const comment = choice(
+    [ string('//'), pwhile(not(char('\n')), any)                              ],
+    [ string('/*'), combine(pwhile(not(string('*/')), any), string('*/'), _1) ]
+);
+
+const skipTrivia = many(alt(ws, comment));
 
 const tId = t(asciiId);
 
@@ -506,7 +511,7 @@ const parseTernary = combine(
 );
 
 const parseProgram = combine(
-    skipWs,
+    skipTrivia,
     pwhile(
         not(eos) as StringParser<EosExpected, never>,
         parseStatement
@@ -517,7 +522,7 @@ const parseProgram = combine(
 
 // token
 function t<E, T>(p: StringParser<E, T>) {
-    return combine(p, skipWs, _1);
+    return combine(p, skipTrivia, _1);
 }
 
 // keyword token
@@ -599,6 +604,18 @@ function main() {
     const hard  = f(res.value[0])(res.value[1])
 
     return 3;
+}
+`);
+
+test(parseProgram,
+`
+// This is a very important program //
+/* It tests comments! */
+function /*id*/ name(
+    /* A */ a,
+    /* B */ _  // ignored
+) {
+    return /**/a; // same as "const" in Haskell
 }
 `);
 

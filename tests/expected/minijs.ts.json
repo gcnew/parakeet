@@ -465,6 +465,80 @@
 }
 
 {
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "function_decl",
+                "name": "name",
+                "params": [
+                    "a",
+                    "_"
+                ],
+                "body": {
+                    "kind": "block_statement",
+                    "statements": [
+                        {
+                            "kind": "return_statement",
+                            "expr": {
+                                "kind": "var_expr",
+                                "name": "a"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        {
+            "source": "\n// This is a very important program //\n/* It tests comments! */\nfunction /*id*/ name(\n    /* A */ a,\n    /* B */ _  // ignored\n) {\n    return /**/a; // same as \"const\" in Haskell\n}\n",
+            "offset": 182,
+            "lineOffsetTable": [
+                [
+                    0,
+                    ""
+                ],
+                [
+                    1,
+                    "// This is a very important program //"
+                ],
+                [
+                    40,
+                    "/* It tests comments! */"
+                ],
+                [
+                    65,
+                    "function /*id*/ name("
+                ],
+                [
+                    87,
+                    "    /* A */ a,"
+                ],
+                [
+                    102,
+                    "    /* B */ _  // ignored"
+                ],
+                [
+                    128,
+                    ") {"
+                ],
+                [
+                    132,
+                    "    return /**/a; // same as \"const\" in Haskell"
+                ],
+                [
+                    180,
+                    "}"
+                ],
+                [
+                    182,
+                    ""
+                ]
+            ]
+        }
+    ]
+}
+
+{
     "kind": "left",
     "value": {
         "kind": "pc_error",
