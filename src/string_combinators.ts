@@ -109,7 +109,7 @@ function string<S extends string>(s: S): StringParser<StringMismatch, S> {
     };
 }
 
-function oneOf(s: char): StringParser<CharNotExpected, char> {
+function oneOf(s: string): StringParser<CharNotExpected, char> {
     if (!s.length) {
         throw new Error('Empty string');
     }
