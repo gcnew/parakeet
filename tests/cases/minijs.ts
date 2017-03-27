@@ -213,7 +213,7 @@ const tUnary = inspect(tOperator, op => {
     return invalid_operator;
 });
 
-const NON_BINARY = '.!?:~';
+const NON_BINARY = '.!?:~=';
 const tBinary = inspect(tOperator, op => {
     if (op.length === 1 && NON_BINARY.indexOf(op) !== -1) {
         return invalid_operator;
