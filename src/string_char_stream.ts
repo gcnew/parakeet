@@ -4,6 +4,8 @@ import { TextStream } from './string_combinators'
 
 export { StringCharStream }
 
+type LineOffsetTable = [number, string][];
+
 class StringCharStream implements TextStream {
     protected constructor(
         private source: string,
@@ -36,21 +38,32 @@ class StringCharStream implements TextStream {
     }
 
     getLineCol(offset: number): [number, number] {
-        let idx = binarySearch(this.lineOffsetTable, x => x[0] < offset ? -1 :
-                                                          x[0] > offset ?  1 : 0);
+        const res = getLineCol(offset, this.lineOffsetTable);
 
-        if (idx === false) {
+        if (!res) {
             throw new Error(`Invalid offset: ${offset}`);
         }
-        if (idx < 0) {
-            idx = -idx - 1;
-        }
 
-        return [idx, offset - this.lineOffsetTable[idx][0]];
+        return res;
     }
 }
 
-function parseLineOffsets(source: string) {
+function getLineCol(offset: number, lineOffsetTable: LineOffsetTable): [number, number]|null {
+    let idx = binarySearch(lineOffsetTable, x => x[0] < offset ? -1 :
+                                                 x[0] > offset ?  1 : 0);
+
+    if (idx === false) {
+        return null;
+    }
+
+    if (idx < 0) {
+        idx = -idx - 1;
+    }
+
+    return [idx, offset - lineOffsetTable[idx][0]];
+}
+
+function parseLineOffsets(source: string): LineOffsetTable {
     const lines = source.split('\n');
 
     let acc = [];
