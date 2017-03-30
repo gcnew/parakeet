@@ -1,6 +1,6 @@
 
 import { StringCharStream } from '../src/string_char_stream'
-import { StringParser } from '../src/string_combinators'
+import { StringParser, parseLineOffsets } from '../src/string_combinators'
 
 export const __colector = {
     apply: (_x: any) => {
@@ -9,7 +9,7 @@ export const __colector = {
 };
 
 export function test(p: StringParser<any, any>, input: string) {
-    const stream = StringCharStream.newInstance(input);
+    const stream = StringCharStream.newInstance(input, parseLineOffsets(input));
     const res = p(stream);
 
     __colector.apply(res);

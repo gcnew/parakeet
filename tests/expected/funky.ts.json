@@ -34,7 +34,7 @@
         {
             "source": "main = 3 + 4;",
             "offset": 13,
-            "lineOffsetTable": [
+            "data": [
                 [
                     0,
                     "main = 3 + 4;"
@@ -105,7 +105,7 @@
         {
             "source": "f x y = x * y; main = f 4 5 + 11;",
             "offset": 33,
-            "lineOffsetTable": [
+            "data": [
                 [
                     0,
                     "f x y = x * y; main = f 4 5 + 11;"
@@ -144,7 +144,7 @@
         {
             "source": "c = 9; main = c;",
             "offset": 16,
-            "lineOffsetTable": [
+            "data": [
                 [
                     0,
                     "c = 9; main = c;"
@@ -219,7 +219,7 @@
         {
             "source": "c = 42; f x = x - c; main = f 29 + c;",
             "offset": 37,
-            "lineOffsetTable": [
+            "data": [
                 [
                     0,
                     "c = 42; f x = x - c; main = f 29 + c;"
@@ -286,7 +286,7 @@
         {
             "source": "x = 20; f x = x - 9; main = f 10;",
             "offset": 33,
-            "lineOffsetTable": [
+            "data": [
                 [
                     0,
                     "x = 20; f x = x - 9; main = f 10;"

@@ -37,7 +37,7 @@
         {
             "source": "λf.f (λx.x) + 1",
             "offset": 15,
-            "lineOffsetTable": [
+            "data": [
                 [
                     0,
                     "λf.f (λx.x) + 1"
@@ -86,7 +86,7 @@
         {
             "source": "(λf.λx.f x) + 1",
             "offset": 15,
-            "lineOffsetTable": [
+            "data": [
                 [
                     0,
                     "(λf.λx.f x) + 1"
@@ -144,7 +144,7 @@
         {
             "source": "λx.λxs.λcc.λcn.cc x xs",
             "offset": 22,
-            "lineOffsetTable": [
+            "data": [
                 [
                     0,
                     "λx.λxs.λcc.λcn.cc x xs"
@@ -186,7 +186,7 @@
         {
             "source": "λtrue.λfalse.true (true false)",
             "offset": 30,
-            "lineOffsetTable": [
+            "data": [
                 [
                     0,
                     "λtrue.λfalse.true (true false)"

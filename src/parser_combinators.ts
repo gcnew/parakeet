@@ -14,6 +14,8 @@ export {
 
     genericAlt, genericChoice, genericCombine,
 
+    getData, setData,
+
     /* monadic binds */
     recover, inspect,
 
@@ -34,6 +36,9 @@ type Either<L, R> = Left<L> | Right<R>
 type Literal = boolean | string | number | null | undefined | object;
 
 interface ParserStream<S> {
+    getData(): any;
+    setData(data: any): this;
+
     next(this: this): [S, this]|null;
 }
 
@@ -76,7 +81,7 @@ function mapError<M, S extends ParserStream<M>, E1, E2, T>(p: Parser<M, S, E1, T
     };
 }
 
-const eosReached = left({ kind: 'pc_error', code: 'eos_reached' } as EosReached);
+const eosReached = left<EosReached>({ kind: 'pc_error', code: 'eos_reached' });
 
 function any<M, S extends ParserStream<M>>(st: S): Either<EosReached, [M, S]> {
     const val = st.next();
@@ -88,7 +93,7 @@ function any<M, S extends ParserStream<M>>(st: S): Either<EosReached, [M, S]> {
     return right(val);
 }
 
-const eosExpected = left({ kind: 'pc_error', code: 'eos_expected' } as EosExpected);
+const eosExpected = left<EosExpected>({ kind: 'pc_error', code: 'eos_expected' });
 
 function eos<S extends ParserStream<Any>>(st: S): Either<EosExpected, [undefined, S]> {
     if (st.next()) {
@@ -124,6 +129,16 @@ function not<M, S extends ParserStream<M>, E, T>(p: Parser<M, S, E, T>): Parser<
         }
 
         return left(res.value[0]);
+    };
+}
+
+function getData<S extends ParserStream<any>>(st: S): Either<never, [any, S]> {
+    return right(pair(st.getData(), st));
+}
+
+function setData(data: any) {
+    return <S extends { setData(data: any): any; }>(st: S): Either<never, [undefined, S]> => {
+        return right(pair(undefined, st.setData(data)));
     };
 }
 

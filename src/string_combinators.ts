@@ -3,28 +3,31 @@ import { Parser, left, right, pair } from './parser_combinators'
 import {
     ParserStream, Either,
 
-    combine, combine3, alt, many, trai, satisfy, genericChoice
+    combine, combine3, alt, many, trai, satisfy, inspect, pfail, pconst, genericChoice
 }  from './parser_combinators'
 
 export {
-    TextStream, StringParser, WithPosition, WithLineCol,
+    TextStream, StringParser, LineOffsetTable, WithPosition, WithLineCol,
 
     StringParserError, DigitExpected, WhitespaceExpected, UnderscoreExpected,
     AsciiAlphaExpected, AsciiIdCharExpected, StringMismatch, CharNotExpected,
 
     oneOf, choice, string,
 
-    position, withPosition, mapPositionToLineCol
+    position, withPosition, posToLineCol, posToLineCol2,
+
+    parseLineOffsets, getLineCol
 }
 
 export type char = string;
 
 interface TextStream extends ParserStream<char> {
-    getPosition(this: this): number,
-    getLineCol(this: this, pos: number): [number, number]
+    getPosition(this: this): number
 }
 
 type StringParser<E, T> = Parser<char, TextStream, E, T>
+
+type LineOffsetTable = [number, string][];
 
 type WithPosition<T> = { position: number, value: T }
 type WithLineCol<T>  = { line: number, col: number, value: T }
@@ -45,6 +48,7 @@ type StringParserError = DigitExpected
 
 type StringMismatch    = { kind: 'pc_error', code: 'string_mismatch',   expected: string }
 type CharNotExpected   = { kind: 'pc_error', code: 'char_not_expected', expected: string }
+type InvalidPosition   = { kind: 'pc_error', code: 'invalid_position'                    }
 
 
 export const ws          = charParser(isWhiteSpace,  mkSimpleError('whitespace_expected'));
@@ -158,25 +162,91 @@ function withPosition<E, T>(p: StringParser<E, T>): StringParser<WithPosition<E>
     };
 }
 
-function positionToLineCol<T>(st: TextStream, n: WithPosition<T>) {
-    const lineCol = st.getLineCol(n.position);
+const invalid_position: InvalidPosition = { kind: 'pc_error', code: 'invalid_position' };
+const left_invalid_position  = left(invalid_position);
+const pfail_invalid_position = pfail(invalid_position);
 
-    return {
-        line: lineCol[0] + 1,
-        col:  lineCol[1] + 1,
-        value: n.value
+function posToLineCol(table: LineOffsetTable) {
+    return <S extends TextStream>(st: S): Either<InvalidPosition, [[number, number], S]> => {
+        const pos = st.getPosition();
+        const lineCol = getLineCol(pos, table);
+
+        if (!lineCol) {
+            return left_invalid_position;
+        }
+
+        return right(pair(lineCol, st));
     };
 }
 
-function mapPositionToLineCol<E, T>(p: StringParser<WithPosition<E>, WithPosition<T>>): StringParser<WithLineCol<E>, WithLineCol<T>> {
-    return (st) => {
-        const res = p(st);
-        if (res.kind === 'left') {
-            return left(positionToLineCol(st, res.value));
+function posToLineCol2<E>(pt: StringParser<E, LineOffsetTable>): StringParser<E | InvalidPosition, [number, number]> {
+    return inspect(
+        combine(pt, position, (t, p) => getLineCol(p, t)),
+
+        lineCol => {
+            if (!lineCol) {
+                return pfail_invalid_position;
+            }
+
+            return pconst(lineCol);
+        }
+    );
+}
+
+function getLineCol(offset: number, lineOffsetTable: LineOffsetTable): [number, number]|null {
+    let idx = binarySearch(lineOffsetTable, x => x[0] < offset ? -1 :
+                                                 x[0] > offset ?  1 : 0);
+
+    if (idx === false) {
+        return null;
+    }
+
+    if (idx < 0) {
+        idx = -idx - 1;
+    }
+
+    return [idx, offset - lineOffsetTable[idx][0]];
+}
+
+function parseLineOffsets(source: string): LineOffsetTable {
+    const lines = source.split('\n');
+
+    let acc = [];
+    let offset = 0;
+    for (const l of lines) {
+        acc.push(pair(offset, l));
+        offset += l.length + 1;
+    }
+
+    return acc;
+}
+
+function binarySearch<T>(arr: T[], compare: (x: T) => -1|0|1): false|number {
+    let low = 0;
+    let high = arr.length - 1;
+
+    if (!arr.length) {
+        return false;
+    }
+
+    while (low <= high) {
+        const m = low + ((high - low) >> 1);
+        const cmp = compare(arr[m]);
+
+        if (cmp < 0) {
+            low = m + 1;
+            continue;
         }
 
-        return right(pair(positionToLineCol(st, res.value[0]), res.value[1]));
-    };
+        if (cmp > 0) {
+            high = m - 1;
+            continue;
+        }
+
+        return m;
+    }
+
+    return -low;
 }
 
 function isWhiteSpace(s: char) {
