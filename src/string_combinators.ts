@@ -11,8 +11,9 @@ export {
 
     StringParserError, DigitExpected, WhitespaceExpected, UnderscoreExpected,
     AsciiAlphaExpected, AsciiIdCharExpected, StringMismatch, CharNotExpected,
+    InvalidPosition,
 
-    oneOf, choice, string,
+    oneOf, stringChoice, string,
 
     position, withPosition, posToLineCol, posToLineCol2,
 
@@ -140,7 +141,7 @@ function oneOf(s: string): StringParser<CharNotExpected, char> {
 // TODO: one day
 // function choice<T, M extends { [key: string]: StringParser<any, T> }>(map: M): StringParser<ErrorOf<M[keyof M]> | StringMismatch, T> {
 
-function choice<E, T>(map: { [key: string]: StringParser<E, T> }): StringParser<E | StringMismatch, T> {
+function stringChoice<E, T>(map: { [key: string]: StringParser<E, T> }): StringParser<E | StringMismatch, T> {
     const keys = Object.keys(map).sort().reverse();
     return genericChoice(keys.map(k => pair(string(k), map[k])));
 }

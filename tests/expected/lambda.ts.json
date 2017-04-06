@@ -37,12 +37,14 @@
         {
             "source": "λf.f (λx.x) + 1",
             "offset": 15,
-            "data": [
-                [
-                    0,
-                    "λf.f (λx.x) + 1"
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "λf.f (λx.x) + 1"
+                    ]
                 ]
-            ]
+            }
         }
     ]
 }
@@ -86,12 +88,14 @@
         {
             "source": "(λf.λx.f x) + 1",
             "offset": 15,
-            "data": [
-                [
-                    0,
-                    "(λf.λx.f x) + 1"
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "(λf.λx.f x) + 1"
+                    ]
                 ]
-            ]
+            }
         }
     ]
 }
@@ -144,12 +148,14 @@
         {
             "source": "λx.λxs.λcc.λcn.cc x xs",
             "offset": 22,
-            "data": [
-                [
-                    0,
-                    "λx.λxs.λcc.λcn.cc x xs"
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "λx.λxs.λcc.λcn.cc x xs"
+                    ]
                 ]
-            ]
+            }
         }
     ]
 }
@@ -186,12 +192,14 @@
         {
             "source": "λtrue.λfalse.true (true false)",
             "offset": 30,
-            "data": [
-                [
-                    0,
-                    "λtrue.λfalse.true (true false)"
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "λtrue.λfalse.true (true false)"
+                    ]
                 ]
-            ]
+            }
         }
     ]
 }

@@ -2,7 +2,7 @@
 import { test } from '../test_util'
 
 import {
-    char, integer, ws, asciiId, choice,
+    char, integer, ws, asciiId, stringChoice,
 
     StringMismatch,
 
@@ -63,7 +63,7 @@ const parseWs    = many1(ws);
 const parseConstant = map(integer, x => mkConstant(+x));
 const parseVar      = map(asciiId, x => mkVar(x));
 
-const parseArithOp = choice({
+const parseArithOp = stringChoice({
     "+": pconst<'add'>('add'),
     "-": pconst<'sub'>('sub'),
     "*": pconst<'mul'>('mul'),

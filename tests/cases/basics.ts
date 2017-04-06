@@ -13,6 +13,7 @@ import {
     left, right, pair
 } from '../../src/parser_combinators'
 
+
 const ll = choice(
     [ string('num'), map(number, n => Number(n)) ],
     [ string('str'), string('hello') ]
@@ -22,7 +23,7 @@ const nn = map(number, x => +x);
 
 const wp0 = combine(many(ws), withPosition(number), (_, x) => x);
 const wp = (st: any) => {
-    const lineOffsets = st.getData();
+    const lineOffsets = st.getData().lineOffsetTable;
     const result = wp0(st);
     const value = result.kind === 'left' ? result.value
                                          : result.value[0];

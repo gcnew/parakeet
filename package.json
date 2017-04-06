@@ -1,0 +1,40 @@
+{
+    "name": "parakeet",
+    "version": "0.1.0",
+    "license": "MIT",
+
+    "description": "Type-safe parser combinators in TypeScript",
+
+    "keywords": [ "TypeScript", "parser", "combinators", "type-safe" ],
+
+    "author": {
+        "name": "gcnew"
+    },
+
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/gcnew/parakeet.git"
+    },
+
+    "main": "./lib/index.js",
+    "types": "./lib/index.d.ts",
+
+    "files": [
+        "lib", "src", "tools", "tsconfig.json", "tsconfig.lib.json"
+    ],
+
+    "devDependencies": {
+        "cycle-detector": "gcnew/cycle-detector"
+    },
+
+    "scripts": {
+        "test-no-build": "node tests/runner.js",
+        "test":          "tsc && npm run test-no-build",
+
+        "accept":        "rm -rf tests/expected/ && mv tests/actual/ tests/expected",
+
+        "build-lib":     "rm -rf lib && tsc -p tsconfig.lib.json"
+    },
+
+    "private": true
+}

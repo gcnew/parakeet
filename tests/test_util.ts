@@ -9,7 +9,7 @@ export const __colector = {
 };
 
 export function test(p: StringParser<any, any>, input: string) {
-    const stream = StringCharStream.newInstance(input, parseLineOffsets(input));
+    const stream = StringCharStream.newInstance(input, { lineOffsetTable: parseLineOffsets(input) });
     const res = p(stream);
 
     __colector.apply(res);

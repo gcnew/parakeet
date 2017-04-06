@@ -1,0 +1,143 @@
+{
+    "kind": "right",
+    "value": [
+        [
+            "xxx",
+            3
+        ],
+        {
+            "source": "xxx",
+            "offset": 3,
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "xxx"
+                    ]
+                ],
+                "counter": 3,
+                "cache": {
+                    "0": {
+                        "value": {
+                            "kind": "right",
+                            "value": [
+                                "x",
+                                {
+                                    "source": "xxx",
+                                    "offset": 1,
+                                    "data": "Cycle(root.value[1].data.cache[\"0\"].value.value[1].data)"
+                                }
+                            ]
+                        }
+                    },
+                    "1": {
+                        "value": {
+                            "kind": "right",
+                            "value": [
+                                "x",
+                                {
+                                    "source": "xxx",
+                                    "offset": 2,
+                                    "data": "Cycle(root.value[1].data.cache[1].value.value[1].data)"
+                                }
+                            ]
+                        }
+                    },
+                    "2": [
+                        {
+                            "value": {
+                                "kind": "left",
+                                "value": {
+                                    "kind": "pc_error",
+                                    "code": "string_mismatch",
+                                    "expected": "y"
+                                }
+                            }
+                        },
+                        {
+                            "value": {
+                                "kind": "right",
+                                "value": [
+                                    "x",
+                                    "Cycle(root.value[1].data.cache[2][1].value.value[1])"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            "xxx",
+            3
+        ],
+        {
+            "source": "xxx",
+            "offset": 3,
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "xxx"
+                    ]
+                ],
+                "counter": 3,
+                "cache": {
+                    "0": {
+                        "key": "eks",
+                        "value": {
+                            "kind": "right",
+                            "value": [
+                                "x",
+                                {
+                                    "source": "xxx",
+                                    "offset": 1,
+                                    "data": "Cycle(root.value[1].data.cache[\"0\"].value.value[1].data)"
+                                }
+                            ]
+                        }
+                    },
+                    "1": {
+                        "key": "eks",
+                        "value": {
+                            "kind": "right",
+                            "value": [
+                                "x",
+                                {
+                                    "source": "xxx",
+                                    "offset": 2,
+                                    "data": "Cycle(root.value[1].data.cache[1].value.value[1].data)"
+                                }
+                            ]
+                        }
+                    },
+                    "2": {
+                        "key": "eks",
+                        "value": {
+                            "kind": "right",
+                            "value": [
+                                "x",
+                                "Cycle(root.value[1].data.cache[2].value.value[1])"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
+
+{
+    "kind": "left",
+    "value": {
+        "kind": "pc_error",
+        "code": "string_mismatch",
+        "expected": "y"
+    }
+}

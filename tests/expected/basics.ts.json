@@ -5,12 +5,14 @@
         {
             "source": "strhello",
             "offset": 8,
-            "data": [
-                [
-                    0,
-                    "strhello"
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "strhello"
+                    ]
                 ]
-            ]
+            }
         }
     ]
 }
@@ -22,12 +24,14 @@
         {
             "source": "strhello world",
             "offset": 8,
-            "data": [
-                [
-                    0,
-                    "strhello world"
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "strhello world"
+                    ]
                 ]
-            ]
+            }
         }
     ]
 }
@@ -39,12 +43,14 @@
         {
             "source": "123abc",
             "offset": 3,
-            "data": [
-                [
-                    0,
-                    "123abc"
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "123abc"
+                    ]
                 ]
-            ]
+            }
         }
     ]
 }
@@ -60,20 +66,22 @@
         {
             "source": "\n\n123",
             "offset": 5,
-            "data": [
-                [
-                    0,
-                    ""
-                ],
-                [
-                    1,
-                    ""
-                ],
-                [
-                    2,
-                    "123"
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        ""
+                    ],
+                    [
+                        1,
+                        ""
+                    ],
+                    [
+                        2,
+                        "123"
+                    ]
                 ]
-            ]
+            }
         }
     ]
 }

@@ -1,5 +1,6 @@
 
 const fs = require('fs');
+const { replaceCycles } = require('cycle-detector');
 
 const testUtil = requireCompiled('test_util');
 
@@ -51,7 +52,7 @@ for (const c of cases) {
     requireCompiled('cases/' + c.replace(/\.ts$/, ''));
 
     const text = results
-        .map(x => JSON.stringify(x, null, '    '))
+        .map(x => JSON.stringify(replaceCycles(x, p => `Cycle(${p})`), null, '    '))
         .join('\n\n');
 
     allResults[c] = text + '\n';
