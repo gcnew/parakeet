@@ -13,7 +13,7 @@ export {
     AsciiAlphaExpected, AsciiIdCharExpected, StringMismatch, CharNotExpected,
     InvalidPosition,
 
-    oneOf, stringChoice, string,
+    oneOf, stringChoice, string, token,
 
     position, withPosition, posToLineCol, posToLineCol2,
 
@@ -144,6 +144,24 @@ function oneOf(s: string): StringParser<CharNotExpected, char> {
 function stringChoice<E, T>(map: { [key: string]: StringParser<E, T> }): StringParser<E | StringMismatch, T> {
     const keys = Object.keys(map).sort().reverse();
     return genericChoice(keys.map(k => pair(string(k), map[k])));
+}
+
+function token<E, TE, T, TT>(
+    p: StringParser<E, T>,
+    f: (val: T, start: number, end: number) => TT,
+    errorMapper: (e: E, pos: number) => TE
+): StringParser<TE, TT> {
+    return st => {
+        const res = p(st);
+        if (res.kind === 'left') {
+            return left(errorMapper(res.value, st.getPosition()));
+        }
+
+        return right(pair(
+            f(res.value[0], st.getPosition(), res.value[1].getPosition()),
+            res.value[1]
+        ));
+    };
 }
 
 function position<S extends TextStream>(st: S): Either<never, [number, S]> {
