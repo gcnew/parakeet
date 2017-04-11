@@ -1,6 +1,6 @@
 import { Parser } from './parser_combinators';
 import { ParserStream, Either } from './parser_combinators';
-export { TextStream, StringParser, LineOffsetTable, WithPosition, WithLineCol, StringParserError, DigitExpected, WhitespaceExpected, UnderscoreExpected, AsciiAlphaExpected, AsciiIdCharExpected, StringMismatch, CharNotExpected, InvalidPosition, oneOf, stringChoice, string, position, withPosition, posToLineCol, posToLineCol2, parseLineOffsets, getLineCol };
+export { TextStream, StringParser, LineOffsetTable, WithPosition, WithLineCol, StringParserError, DigitExpected, WhitespaceExpected, UnderscoreExpected, AsciiAlphaExpected, AsciiIdCharExpected, StringMismatch, CharNotExpected, InvalidPosition, oneOf, stringChoice, string, token, position, withPosition, posToLineCol, posToLineCol2, parseLineOffsets, getLineCol };
 export declare type char = string;
 interface TextStream extends ParserStream<char> {
     getPosition(this: this): number;
@@ -93,6 +93,7 @@ declare function oneOf(s: string): StringParser<CharNotExpected, char>;
 declare function stringChoice<E, T>(map: {
     [key: string]: StringParser<E, T>;
 }): StringParser<E | StringMismatch, T>;
+declare function token<E, TE, T, TT>(p: StringParser<E, T>, f: (val: T, start: number, end: number) => TT, errorMapper: (e: E, pos: number) => TE): StringParser<TE, TT>;
 declare function position<S extends TextStream>(st: S): Either<never, [number, S]>;
 declare function withPosition<E, T>(p: StringParser<E, T>): StringParser<WithPosition<E>, WithPosition<T>>;
 declare function posToLineCol(table: LineOffsetTable): <S extends TextStream>(st: S) => Either<InvalidPosition, [[number, number], S]>;

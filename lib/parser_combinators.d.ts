@@ -45,7 +45,7 @@ declare function many<M, S extends ParserStream<M>, A>(p: Parser<M, S, Any, A>):
 declare function pwhile<M, S extends ParserStream<M>, E, T>(cond: Parser<M, S, Any, Any>, body: Parser<M, S, E, T>): Parser<M, S, E, T[]>;
 declare function oneOrMore<M, S extends ParserStream<M>, E, A>(p: Parser<M, S, E, A>): Parser<M, S, E, A[]>;
 declare function separated<M, S extends ParserStream<M>, Е, T>(p: Parser<M, S, Е, T>, sep: Parser<M, S, Any, Any>): Parser<M, S, Е, T[]>;
-declare function peek<M, S extends ParserStream<M>, E>(p1: Parser<M, S, E, Any>): Parser<M, S, E, true>;
+declare function peek<M, S extends ParserStream<M>, E, T>(p1: Parser<M, S, E, T>): Parser<M, S, E, T>;
 declare function maybe<M, S extends ParserStream<M>, A>(p1: Parser<M, S, Any, A>): Parser<M, S, never, A | undefined>;
 declare function trai<M, S extends ParserStream<M>, E1, E2, A, B, C>(p1: Parser<M, S, E1, A>, p2: Parser<M, S, E2, B>, f: (a: A, b: B) => C): Parser<M, S, E2, C | undefined>;
 declare function recover<M, S extends ParserStream<M>, E1, E2, A, B>(p1: Parser<M, S, E1, A>, f: (e: E1) => Parser<M, S, E2, B>): Parser<M, S, E2, A | B>;
