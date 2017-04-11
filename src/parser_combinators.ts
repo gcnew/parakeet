@@ -253,7 +253,7 @@ function separated<M, S extends ParserStream<M>, Е, T>(
     return combine(p, many(combine(sep, p, (_, x) => x)), (x, xs) => (xs.unshift(x), xs));
 }
 
-function peek<M, S extends ParserStream<M>, E>(p1: Parser<M, S, E, Any>): Parser<M, S, E, true> {
+function peek<M, S extends ParserStream<M>, E, T>(p1: Parser<M, S, E, T>): Parser<M, S, E, T> {
     return (st) => {
         const res = p1(st);
 
@@ -261,7 +261,7 @@ function peek<M, S extends ParserStream<M>, E>(p1: Parser<M, S, E, Any>): Parser
             return res;
         }
 
-        return right(pair(true, st));
+        return right(pair(res.value[0], st));
     };
 }
 
