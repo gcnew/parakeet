@@ -326,11 +326,15 @@ function inspect<M, S extends ParserStream<M>, E1, E2, A, B>(
     };
 }
 
-function satisfy<M, S extends ParserStream<M>, E>(f: (x: M) => boolean, e: E): Parser<M, S, E, M> {
+function satisfy<M, S extends ParserStream<M>, E>(f: (x: M) => boolean, e: E): Parser<M, S, EosReached|E, M> {
     const error = left(e);
     return (st) => {
         const res = st.next();
-        if (!res || !f(res[0])) {
+        if (!res) {
+            return eosReached;
+        }
+
+        if (!f(res[0])) {
             return error;
         }
 

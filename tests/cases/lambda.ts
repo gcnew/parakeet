@@ -10,6 +10,8 @@ import {
 } from '../../src/string_combinators'
 
 import {
+    EosReached,
+
     map, alt, alt3, many, combine, combine3, combine4, terminated,
 
     satisfy as psat,
@@ -79,7 +81,7 @@ const parseExprNoAp = alt3(
 
 // Expr = Lambda
 //      | ExprNoAp (' ' ExprNoAp)*
-const parseExpr: StringParser<StringMismatch, Expr> = alt(
+const parseExpr: StringParser<StringMismatch | EosReached, Expr> = alt(
     parseLambda,
     combine(
         parseExprNoAp,

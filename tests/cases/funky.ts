@@ -10,6 +10,8 @@ import {
 } from '../../src/string_combinators'
 
 import {
+    EosReached,
+
     map, mapError, alt3, many, maybe, pconst, combine, combine3, combine4, terminated,
 
     oneOrMore as many1
@@ -105,7 +107,7 @@ const parseApplication = combine(
 );
 
 // Arith = Application ('+'|'_'|'*'|'/') Arith
-const parseArith: StringParser<StringMismatch, Expr> = combine3(
+const parseArith: StringParser<StringMismatch | EosReached, Expr> = combine3(
     parseApplication,
     skipWs,
     maybe(combine3(

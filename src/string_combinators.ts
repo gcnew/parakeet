@@ -87,7 +87,9 @@ export const number = combine(
     (w, f) => w + (f || '')
 );
 
-function string<S extends string>(s: S): StringParser<StringMismatch, S> {
+const eosReached = left<EosReached>({ kind: 'pc_error', code: 'eos_reached' });
+
+function string<S extends string>(s: S): StringParser<StringMismatch|EosReached, S> {
     if (!s.length) {
         throw new Error('Empty string');
     }
@@ -102,7 +104,7 @@ function string<S extends string>(s: S): StringParser<StringMismatch, S> {
             const next = cur.next();
 
             if (!next) {
-                return error;
+                return eosReached;
             }
 
             if (next[0] !== s[i]) {
@@ -116,7 +118,7 @@ function string<S extends string>(s: S): StringParser<StringMismatch, S> {
     };
 }
 
-function oneOf(s: string): StringParser<CharNotExpected, char> {
+function oneOf(s: string): StringParser<CharNotExpected|EosReached, char> {
     if (!s.length) {
         throw new Error('Empty string');
     }
@@ -132,7 +134,11 @@ function oneOf(s: string): StringParser<CharNotExpected, char> {
     return (st) => {
         const next = st.next();
 
-        if (!next || !charMap[next[0]]) {
+        if (!next) {
+            return eosReached;
+        }
+
+        if (!charMap[next[0]]) {
             return error;
         }
 
@@ -143,7 +149,7 @@ function oneOf(s: string): StringParser<CharNotExpected, char> {
 // TODO: one day
 // function choice<T, M extends { [key: string]: StringParser<any, T> }>(map: M): StringParser<ErrorOf<M[keyof M]> | StringMismatch, T> {
 
-function stringChoice<E, T>(map: { [key: string]: StringParser<E, T> }): StringParser<E | StringMismatch, T> {
+function stringChoice<E, T>(map: { [key: string]: StringParser<E, T> }): StringParser<E|StringMismatch|EosReached, T> {
     const keys = Object.keys(map).sort().reverse();
     return genericChoice(keys.map(k => pair(string(k), map[k])));
 }
@@ -299,6 +305,6 @@ function mkSimpleError<T extends string>(code: T) {
     return { kind: 'pc_error' as 'pc_error', code };
 }
 
-function charParser<E extends StringParserError>(pred: (x: char) => boolean, error: E): StringParser<E, char> {
+function charParser<E extends StringParserError>(pred: (x: char) => boolean, error: E): StringParser<E|EosReached, char> {
     return satisfy<char, TextStream, E>(pred, error);
 }
