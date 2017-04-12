@@ -1,5 +1,5 @@
 import { Parser } from './parser_combinators';
-import { ParserStream, Either } from './parser_combinators';
+import { ParserStream, Either, EosReached } from './parser_combinators';
 export { TextStream, StringParser, LineOffsetTable, WithPosition, WithLineCol, StringParserError, DigitExpected, WhitespaceExpected, UnderscoreExpected, AsciiAlphaExpected, AsciiIdCharExpected, StringMismatch, CharNotExpected, InvalidPosition, oneOf, stringChoice, string, token, position, withPosition, posToLineCol, posToLineCol2, parseLineOffsets, getLineCol };
 export declare type char = string;
 interface TextStream extends ParserStream<char> {
@@ -51,48 +51,49 @@ declare type InvalidPosition = {
     kind: 'pc_error';
     code: 'invalid_position';
 };
-export declare const ws: Parser<string, TextStream, {
+export declare const ws: Parser<string, TextStream, EosReached | {
     kind: "pc_error";
     code: "whitespace_expected";
 }, string>;
-export declare const digit: Parser<string, TextStream, {
+export declare const digit: Parser<string, TextStream, EosReached | {
     kind: "pc_error";
     code: "digit_expected";
 }, string>;
-export declare const under: Parser<string, TextStream, {
+export declare const under: Parser<string, TextStream, EosReached | {
     kind: "pc_error";
     code: "underscore_expected";
 }, string>;
-export declare const asciiAlpha: Parser<string, TextStream, {
+export declare const asciiAlpha: Parser<string, TextStream, EosReached | {
     kind: "pc_error";
     code: "ascii_alpha_expected";
 }, string>;
-export declare const asciiIdChar: Parser<string, TextStream, {
+export declare const asciiIdChar: Parser<string, TextStream, EosReached | {
     kind: "pc_error";
     code: "ascii_id_char_expected";
 }, string>;
 export declare const char: typeof string;
-export declare const asciiId: Parser<string, TextStream, {
+export declare const anyChar: StringParser<EosReached, char>;
+export declare const asciiId: Parser<string, TextStream, EosReached | {
     kind: "pc_error";
     code: "ascii_alpha_expected";
 }, string>;
-export declare const integer: Parser<string, TextStream, {
+export declare const integer: Parser<string, TextStream, EosReached | {
     kind: "pc_error";
     code: "digit_expected";
 }, string>;
-export declare const float: Parser<string, TextStream, StringMismatch | {
+export declare const float: Parser<string, TextStream, EosReached | StringMismatch | {
     kind: "pc_error";
     code: "digit_expected";
 }, string>;
-export declare const number: Parser<string, TextStream, {
+export declare const number: Parser<string, TextStream, EosReached | {
     kind: "pc_error";
     code: "digit_expected";
 }, string>;
-declare function string<S extends string>(s: S): StringParser<StringMismatch, S>;
-declare function oneOf(s: string): StringParser<CharNotExpected, char>;
+declare function string<S extends string>(s: S): StringParser<StringMismatch | EosReached, S>;
+declare function oneOf(s: string): StringParser<CharNotExpected | EosReached, char>;
 declare function stringChoice<E, T>(map: {
     [key: string]: StringParser<E, T>;
-}): StringParser<E | StringMismatch, T>;
+}): StringParser<E | StringMismatch | EosReached, T>;
 declare function token<E, TE, T, TT>(p: StringParser<E, T>, f: (val: T, start: number, end: number) => TT, errorMapper: (e: E, pos: number) => TE): StringParser<TE, TT>;
 declare function position<S extends TextStream>(st: S): Either<never, [number, S]>;
 declare function withPosition<E, T>(p: StringParser<E, T>): StringParser<WithPosition<E>, WithPosition<T>>;

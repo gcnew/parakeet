@@ -50,7 +50,7 @@ declare function maybe<M, S extends ParserStream<M>, A>(p1: Parser<M, S, Any, A>
 declare function trai<M, S extends ParserStream<M>, E1, E2, A, B, C>(p1: Parser<M, S, E1, A>, p2: Parser<M, S, E2, B>, f: (a: A, b: B) => C): Parser<M, S, E2, C | undefined>;
 declare function recover<M, S extends ParserStream<M>, E1, E2, A, B>(p1: Parser<M, S, E1, A>, f: (e: E1) => Parser<M, S, E2, B>): Parser<M, S, E2, A | B>;
 declare function inspect<M, S extends ParserStream<M>, E1, E2, A, B>(p1: Parser<M, S, E1, A>, f: (e: A) => Parser<M, S, E2, B>): Parser<M, S, E1 | E2, B>;
-declare function satisfy<M, S extends ParserStream<M>, E>(f: (x: M) => boolean, e: E): Parser<M, S, E, M>;
+declare function satisfy<M, S extends ParserStream<M>, E>(f: (x: M) => boolean, e: E): Parser<M, S, EosReached | E, M>;
 declare function genericChoice<M, S extends ParserStream<M>, E1, E2, T>(parsers: [Parser<M, S, E1, Any>, Parser<M, S, E2, T>][]): Parser<M, S, E1 | E2, T>;
 export declare function alt<M, S extends ParserStream<M>, E, T1, T2>(p1: Parser<M, S, Any, T1>, p2: Parser<M, S, E, T2>): Parser<M, S, E, T1 | T2>;
 export declare function alt3<M, S extends ParserStream<M>, E, T1, T2, T3>(p1: Parser<M, S, Any, T1>, p2: Parser<M, S, Any, T2>, p3: Parser<M, S, E, T3>): Parser<M, S, E, T1 | T2 | T3>;
