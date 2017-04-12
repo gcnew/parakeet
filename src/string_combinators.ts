@@ -1,9 +1,9 @@
 
 import { Parser, left, right, pair } from './parser_combinators'
 import {
-    ParserStream, Either,
+    ParserStream, Either, EosReached,
 
-    combine, combine3, alt, many, trai, satisfy, inspect, pfail, pconst, genericChoice
+    any, combine, combine3, alt, many, trai, satisfy, inspect, pfail, pconst, genericChoice
 }  from './parser_combinators'
 
 export {
@@ -59,6 +59,8 @@ export const asciiAlpha  = charParser(isAsciiAlpha,  mkSimpleError('ascii_alpha_
 export const asciiIdChar = charParser(isAsciiIdChar, mkSimpleError('ascii_id_char_expected'));
 
 export const char = string;
+
+export const anyChar: StringParser<EosReached, char> = any;
 
 export const asciiId = combine(
     alt(under, asciiAlpha),
