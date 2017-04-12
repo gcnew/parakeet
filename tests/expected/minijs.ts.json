@@ -7168,6 +7168,15 @@
 
 {
     "kind": "left",
+    "value": {
+        "kind": "lex_error",
+        "message": "unexpected_character",
+        "position": 12
+    }
+}
+
+{
+    "kind": "left",
     "value": "1:6: Error: eos_reached"
 }
 

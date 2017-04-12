@@ -16,7 +16,7 @@ import {
 
     pair,
 
-    map, recover, pwhile, not, eos, many, peek, maybe, trai, pconst, pfail, inspect, separated,
+    map, recover, pwhile, not, eos, many, peek, maybe, trai, pconst, pfail, inspect, separatedZero,
     alt, alt3, alt4, combine, combine3, combine4, choice, choice3, choice4, choice6, choice7,
 
     getData,
@@ -416,18 +416,18 @@ const parseConstDecl = combine3(
 
 const parseBlock = combine3(
     expect('{'),
-    many(parseStatement),
+    pwhile(not(expect('}')), parseStatement),
     expect('}'),
 
-    (_, statements) => mkBlockStatement(statements || [])
+    (_, statements) => mkBlockStatement(statements)
 );
 
 const parseParameters = combine3(
     expect('('),
-    maybe(separated(accept('t_id'), expect(','))),
+    separatedZero(accept('t_id'), expect(',')),
     expect(')'),
 
-    (_, params) => (params || []).map(x => x.value)
+    (_, params) => params.map(x => x.value)
 );
 
 // Function = "function" " "+ Id " "* Block
@@ -447,51 +447,63 @@ const parseIf = combine3(
 
 const parseArray = combine3(
     expect('['),
-    maybe(separated(parseExpr, expect(','))),
+    separatedZero(parseExpr, expect(',')),
     expect(']'),
 
-    (_, items) => mkArrayExpr(items || [])
+    (_, items) => mkArrayExpr(items)
 );
 
 const parseObject = combine3(
     expect('{'),
-    maybe(
-        separated(
-            combine3(
-                choice(
-                    [ peek(char('\'')), accept('t_string') ],
-                    [ pconst(true),     accept('t_id')     ]   // TODO: numbers
-                ),
-                expect(':'),
-                parseExpr,
-
-                (prop, _, val) => pair(prop.value, val)
+    separatedZero(
+        combine3(
+            choice(
+                [ peek(char('\'')), accept('t_string') ],
+                [ pconst(true),     accept('t_id')     ]   // TODO: numbers
             ),
-            expect(',')
-        )
+            expect(':'),
+            parseExpr,
+
+            (prop, _, val) => pair(prop.value, val)
+        ),
+        expect(',')
     ),
     expect('}'),
 
-    (_, props) => mkObjectExpr(props || [])
+    (_, props) => mkObjectExpr(props)
 );
 
-const parseLambdaOrPriority = alt(
-    combine3(
-        parseParameters, expect('=>'), parseExpr,
-        (params, _, expr) => mkLambdaExpr(params, expr)
+const lookIsLambda = combine(
+    expect('('),
+    choice(
+        [ accept('t_id'),   alt(
+                                expect(','),
+                                combine(expect(')'), expect('=>'), _1)
+                            ) ],
+        [ pconst(true),     expect(')') ]
     ),
-    combine3(
-        expect('('), parseExpr, expect(')'),
-        _2
-    )
+
+    _2
+);
+
+const parseLambdaOrPriority = choice(
+    [ peek(lookIsLambda),   combine3(
+                                parseParameters, expect('=>'), parseExpr,
+                                (params, _, expr) => mkLambdaExpr(params, expr)
+                            ) ],
+
+    [ pconst(true),         combine3(
+                                expect('('), parseExpr, expect(')'),
+                                _2
+                            ) ]
 );
 
 const parseCallArgs = combine3(
     expect('('),
-    maybe(separated(parseExpr, expect(','))),
+    separatedZero(parseExpr, expect(',')),
     expect(')'),
 
-    (_, args) => args || []
+    _2
 );
 
 const parseIndex = combine3(
@@ -612,7 +624,8 @@ function parsePrecedenced(expr: Expr, rest: [string, Expr][]): Expr {
 
 const parseBinary = combine(
     parseUnary,
-    many(
+    pwhile(
+        peek(tBinary),
         combine(tBinary, parseUnary, (op, e) => pair(op.value, e))
     ),
 
@@ -766,6 +779,7 @@ test(parseProgram, `'hello'/*`);
 test(parseProgram, `hello/*`);
 test(parseProgram, `1/*`);
 test(parseProgram, `ok//`);
+test(parseProgram, `obj.test(f, "fail");`);
 
 test(parseProgramPrettyErrors, `const`);
 test(parseProgramPrettyErrors, `const (`);
