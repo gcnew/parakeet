@@ -1,4 +1,4 @@
-export { Parser, ParserStream, EosReached, EosExpected, map, mapError, many, oneOrMore, separated, pwhile, peek, maybe, trai, satisfy, any, eos, not, terminated, pconst, pfail, genericAlt, genericChoice, genericCombine, getData, setData, recover, inspect, Left, Right, Either, Literal, Any, left, right, pair };
+export { Parser, ParserStream, EosReached, EosExpected, map, mapError, many, oneOrMore, separated, separatedZero, pwhile, peek, maybe, trai, satisfy, any, eos, not, terminated, pconst, pfail, genericAlt, genericChoice, genericCombine, getData, setData, modifyData, recover, inspect, Left, Right, Either, Literal, Any, left, right, pair };
 declare type Any = {} | undefined | null;
 declare type Left<L> = {
     kind: 'left';
@@ -39,12 +39,17 @@ declare function getData<S extends ParserStream<any>>(st: S): Either<never, [any
 declare function setData(data: any): <S extends {
     setData(data: any): any;
 }>(st: S) => Either<never, [undefined, S]>;
+declare function modifyData(f: (data: any) => any): <S extends {
+    setData(data: any): any;
+    getData(): any;
+}>(st: S) => Either<never, [any, S]>;
 declare function genericAlt<M, S extends ParserStream<M>, E, T>(parsers: Parser<M, S, E, T>[]): Parser<M, S, E, T>;
 declare function genericCombine<M, S extends ParserStream<M>, E, A, B>(parsers: Parser<M, S, E, A>[], f: (...values: A[]) => B): Parser<M, S, E, B>;
 declare function many<M, S extends ParserStream<M>, A>(p: Parser<M, S, Any, A>): Parser<M, S, never, A[]>;
 declare function pwhile<M, S extends ParserStream<M>, E, T>(cond: Parser<M, S, Any, Any>, body: Parser<M, S, E, T>): Parser<M, S, E, T[]>;
 declare function oneOrMore<M, S extends ParserStream<M>, E, A>(p: Parser<M, S, E, A>): Parser<M, S, E, A[]>;
-declare function separated<M, S extends ParserStream<M>, Е, T>(p: Parser<M, S, Е, T>, sep: Parser<M, S, Any, Any>): Parser<M, S, Е, T[]>;
+declare function separated<M, S extends ParserStream<M>, E, T>(p: Parser<M, S, E, T>, sep: Parser<M, S, Any, Any>): Parser<M, S, E, T[]>;
+declare function separatedZero<M, S extends ParserStream<M>, E, T>(p: Parser<M, S, E, T>, sep: Parser<M, S, Any, Any>): Parser<M, S, E, T[]>;
 declare function peek<M, S extends ParserStream<M>, E, T>(p1: Parser<M, S, E, T>): Parser<M, S, E, T>;
 declare function maybe<M, S extends ParserStream<M>, A>(p1: Parser<M, S, Any, A>): Parser<M, S, never, A | undefined>;
 declare function trai<M, S extends ParserStream<M>, E1, E2, A, B, C>(p1: Parser<M, S, E1, A>, p2: Parser<M, S, E2, B>, f: (a: A, b: B) => C): Parser<M, S, E2, C | undefined>;
