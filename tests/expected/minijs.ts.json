@@ -7167,6 +7167,21 @@
 }
 
 {
+    "kind": "left",
+    "value": "1:6: Error: eos_reached"
+}
+
+{
+    "kind": "left",
+    "value": "1:7: Error: Expected: \"t_id\" found \"(\" (t_punct)"
+}
+
+{
+    "kind": "left",
+    "value": "1:11: Error: Expected: \"(\" found \"{\" (t_punct)"
+}
+
+{
     "kind": "right",
     "value": [
         [

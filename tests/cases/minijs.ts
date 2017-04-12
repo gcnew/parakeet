@@ -6,7 +6,9 @@ import * as C from '../../src/cache'
 import {
     StringParser, TextStream,
 
-    char, anyChar as any, string, number, digit, ws, asciiId, oneOf, token
+    char, anyChar as any, string, number, digit, ws, asciiId, oneOf, token,
+
+    getLineCol
 } from '../../src/string_combinators'
 
 import {
@@ -14,8 +16,10 @@ import {
 
     pair,
 
-    map, pwhile, not, eos, many, peek, maybe, trai, pconst, pfail, inspect, separated,
+    map, recover, pwhile, not, eos, many, peek, maybe, trai, pconst, pfail, inspect, separated,
     alt, alt3, alt4, combine, combine3, combine4, choice, choice3, choice4, choice6, choice7,
+
+    getData,
 
     oneOrMore as many1
 } from '../../src/parser_combinators'
@@ -638,6 +642,30 @@ const parseProgram = combine(
     (_, prog: Program) => prog
 );
 
+const parseProgramPrettyErrors = recover(
+    parseProgram,
+
+    e => inspect(
+        getData as StringParser<never, any>,
+
+        (data): StringParser<string, never> => {
+            const pos = e.kind === 'lex_error' ? e.position
+                                               : e.found.start;
+
+            const lineCol = getLineCol(pos, data.lineOffsetTable);
+
+            if (!lineCol) {
+                throw new Error('ASSERT: broken');
+            }
+
+            const message = e.kind === 'lex_error'
+                ? e.message
+                : `Expected: "${e.expected}" found "${e.found.value}" (${e.found.kind})`;
+
+            return pfail(`${lineCol[0]+1}:${lineCol[1]+1}: Error: ${message}`);
+        }
+    )
+);
 
 /* Helper functions */
 
@@ -738,6 +766,10 @@ test(parseProgram, `'hello'/*`);
 test(parseProgram, `hello/*`);
 test(parseProgram, `1/*`);
 test(parseProgram, `ok//`);
+
+test(parseProgramPrettyErrors, `const`);
+test(parseProgramPrettyErrors, `const (`);
+test(parseProgramPrettyErrors, `function f{`);
 
 getPrecedence = getPrecedenceLoose;
 test(parseProgram, `f >>= g >>= x => 5`);
