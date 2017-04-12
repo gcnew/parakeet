@@ -14,7 +14,7 @@ export {
 
     genericAlt, genericChoice, genericCombine,
 
-    getData, setData,
+    getData, setData, modifyData,
 
     /* monadic binds */
     recover, inspect,
@@ -139,6 +139,13 @@ function getData<S extends ParserStream<any>>(st: S): Either<never, [any, S]> {
 function setData(data: any) {
     return <S extends { setData(data: any): any; }>(st: S): Either<never, [undefined, S]> => {
         return right(pair(undefined, st.setData(data)));
+    };
+}
+
+function modifyData(f: (data: any) => any) {
+    return <S extends { setData(data: any): any; getData(): any; }>(st: S): Either<never, [any, S]> => {
+        const newData = f(st.getData());
+        return right(pair(newData, st.setData(newData)));
     };
 }
 
