@@ -6,7 +6,7 @@ export {
     /* combinators */
     map, mapError,
 
-    many, oneOrMore, separated, pwhile,
+    many, oneOrMore, separated, separatedZero, pwhile,
 
     peek, maybe, trai, satisfy,
 
@@ -253,11 +253,21 @@ function oneOrMore<M, S extends ParserStream<M>, E, A>(p: Parser<M, S, E, A>): P
     return combine(p, many(p), (x, xs) => (xs.unshift(x), xs));
 }
 
-function separated<M, S extends ParserStream<M>, Е, T>(
-    p: Parser<M, S, Е, T>,
+function separated<M, S extends ParserStream<M>, E, T>(
+    p: Parser<M, S, E, T>,
     sep: Parser<M, S, Any, Any>
-): Parser<M, S, Е, T[]> {
-    return combine(p, many(combine(sep, p, (_, x) => x)), (x, xs) => (xs.unshift(x), xs));
+): Parser<M, S, E, T[]> {
+    return combine(p, pwhile(sep, p), (x, xs) => (xs.unshift(x), xs));
+}
+
+function separatedZero<M, S extends ParserStream<M>, E, T>(
+    p: Parser<M, S, E, T>,
+    sep: Parser<M, S, Any, Any>
+): Parser<M, S, E, T[]> {
+    return map(
+        trai(p, pwhile(sep, p), (x, xs) => (xs.unshift(x), xs)),
+        res => res || []
+    );
 }
 
 function peek<M, S extends ParserStream<M>, E, T>(p1: Parser<M, S, E, T>): Parser<M, S, E, T> {
