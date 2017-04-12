@@ -6,15 +6,15 @@ import * as C from '../../src/cache'
 import {
     StringParser, TextStream,
 
-    char, string, number, digit, ws, asciiId, oneOf, token
+    char, anyChar as any, string, number, digit, ws, asciiId, oneOf, token
 } from '../../src/string_combinators'
 
 import {
-    EosExpected, EosReached, Any,
+    EosExpected, Any,
 
     pair,
 
-    map, pwhile, not, eos, many, peek, maybe, trai, pconst, pfail, inspect, separated, any,
+    map, pwhile, not, eos, many, peek, maybe, trai, pconst, pfail, inspect, separated,
     alt, alt3, alt4, combine, combine3, combine4, choice, choice3, choice4, choice6, choice7,
 
     oneOrMore as many1
@@ -181,22 +181,30 @@ const cache = C.cache(
 
 /* Tokenizer */
 
-const comment = choice(
-    [ string('//'), pwhile(not(char('\n')), any)                              ],
-    [ string('/*'), combine(pwhile(not(string('*/')), any), string('*/'), _1) ]
-);
+const skipTrivia = token(
+    pwhile(
+        peek(alt3(ws, string('//'), string('/*'))),
 
-const skipTrivia = many(alt(ws, comment));
+        choice3(
+            [ string('//'), pwhile(not(alt(char('\n'), eos)), any)                    ],
+            [ string('/*'), combine(pwhile(not(string('*/')), any), string('*/'), _1) ],
+            [ pconst(true), many1(ws)                                                 ]
+        )
+    ),
+
+    x => x,
+    (_e, position): LexError => ({ kind: 'lex_error', message: 'unterminated_comment', position })
+);
 
 const lexString = combine3(
     char('\''),
     many(
         choice(
             [ char('\\'), choice4(
-                              [ char('n'),    pconst('\n') as StringParser<never, char> ],
+                              [ char('n'),    pconst('\n') as StringParser<never, char> ], // TYH
                               [ char('r'),    pconst('\r') ],
                               [ char('t'),    pconst('\t') ],
-                              [ pconst(true), any ],
+                              [ pconst(true), any          ],
                           ) ],
             [ peek(not(char('\''))), any ]
         )
@@ -255,7 +263,7 @@ const nextToken = cache(
                 [ peek(digit),      lex2token(number,    't_number', 'number_expected')     ],
                 [ peek(char('\'')), lex2token(lexString, 't_string', 'unterminated_string') ],
                 [ pconst(true),     token(
-                                        inspect(any as StringParser<EosReached, char>, _ => pfail(false)),
+                                        inspect(any, _ => pfail(false)),
                                         (x: never) => x,
                                         (e, position): LexError => ({
                                             kind: 'lex_error',
@@ -301,7 +309,7 @@ const lexRange = combine3(
     char('['),
     many(choice(
         [ char('\n'),           pfail('unterminated_regexp') as StringParser<string, never>     ], // TYH
-        [ peek(not(char(']'))), any                          as StringParser<EosExpected, char> ]  // TYH
+        [ peek(not(char(']'))), any ]
     )),
     char(']'),
 
@@ -623,7 +631,7 @@ const parseTernary = combine(
 const parseProgram = combine(
     skipTrivia,
     pwhile(
-        not(eos) as StringParser<EosExpected, never>,
+        not(eos as StringParser<EosExpected, never>), // TYH
         parseStatement
     ),
 
@@ -724,6 +732,12 @@ test(parseProgram, `'hello'.replace(/l/g, 'r')`);
 test(parseProgram, `\`invalid\``);
 test(parseProgram, `/hello`);
 test(parseProgram, `'hello`);
+test(parseProgram, `/*`);
+test(parseProgram, `/hello//*`);
+test(parseProgram, `'hello'/*`);
+test(parseProgram, `hello/*`);
+test(parseProgram, `1/*`);
+test(parseProgram, `ok//`);
 
 getPrecedence = getPrecedenceLoose;
 test(parseProgram, `f >>= g >>= x => 5`);

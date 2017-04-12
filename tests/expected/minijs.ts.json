@@ -7069,6 +7069,104 @@
 }
 
 {
+    "kind": "left",
+    "value": {
+        "kind": "lex_error",
+        "message": "unterminated_comment",
+        "position": 0
+    }
+}
+
+{
+    "kind": "left",
+    "value": {
+        "kind": "lex_error",
+        "message": "unterminated_comment",
+        "position": 7
+    }
+}
+
+{
+    "kind": "left",
+    "value": {
+        "kind": "lex_error",
+        "message": "unterminated_comment",
+        "position": 7
+    }
+}
+
+{
+    "kind": "left",
+    "value": {
+        "kind": "lex_error",
+        "message": "unterminated_comment",
+        "position": 5
+    }
+}
+
+{
+    "kind": "left",
+    "value": {
+        "kind": "lex_error",
+        "message": "unterminated_comment",
+        "position": 1
+    }
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "expr_statement",
+                "expr": {
+                    "kind": "var_expr",
+                    "name": "ok"
+                }
+            }
+        ],
+        {
+            "source": "ok//",
+            "offset": 4,
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "ok//"
+                    ]
+                ],
+                "$cache": {
+                    "0": {
+                        "value": {
+                            "kind": "right",
+                            "value": [
+                                {
+                                    "kind": "t_id",
+                                    "value": "ok",
+                                    "start": 0,
+                                    "end": 2
+                                },
+                                "Cycle(root.value[1].data.$cache[\"0\"].value.value[1])"
+                            ]
+                        }
+                    },
+                    "4": {
+                        "value": {
+                            "kind": "left",
+                            "value": {
+                                "kind": "lex_error",
+                                "message": "eos_reached",
+                                "position": 4
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
+
+{
     "kind": "right",
     "value": [
         [
