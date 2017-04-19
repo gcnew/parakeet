@@ -13,7 +13,7 @@ export {
     AsciiAlphaExpected, AsciiIdCharExpected, StringMismatch, CharNotExpected,
     InvalidPosition,
 
-    oneOf, stringChoice, string, stringInsensitive, token,
+    oneOf, notOneOf, stringChoice, string, stringInsensitive, token,
 
     position, withPosition, posToLineCol, posToLineCol2,
 
@@ -150,6 +150,14 @@ function stringInsensitive(s: string): StringParser<StringMismatch|EosReached, s
 }
 
 function oneOf(s: string): StringParser<CharNotExpected|EosReached, char> {
+    return oneOfGeneric(s, id);
+}
+
+function notOneOf(s: string): StringParser<CharNotExpected|EosReached, char> {
+    return oneOfGeneric(s, not);
+}
+
+function oneOfGeneric(s: string, mapper: (x: boolean) => boolean): StringParser<CharNotExpected|EosReached, char> {
     if (!s.length) {
         throw new Error('Empty string');
     }
@@ -169,7 +177,7 @@ function oneOf(s: string): StringParser<CharNotExpected|EosReached, char> {
             return eosReached;
         }
 
-        if (!charMap[next[0]]) {
+        if (!mapper(charMap[next[0]])) {
             return error;
         }
 
@@ -305,6 +313,14 @@ function binarySearch<T>(arr: T[], compare: (x: T) => -1|0|1): false|number {
     }
 
     return -low;
+}
+
+function id<T>(x: T) {
+    return x;
+}
+
+function not(x: boolean): boolean {
+    return !x;
 }
 
 function isWhiteSpace(s: char) {

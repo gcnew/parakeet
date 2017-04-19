@@ -6,7 +6,7 @@ import * as C from '../../src/cache'
 import {
     StringParser, TextStream,
 
-    char, anyChar as any, string, number, digit, ws, asciiId, oneOf, token,
+    char, anyChar as any, string, number, digit, ws, asciiId, oneOf, notOneOf, token,
 
     getLineCol
 } from '../../src/string_combinators'
@@ -190,7 +190,7 @@ const skipTrivia = token(
         peek(alt3(ws, string('//'), string('/*'))),
 
         choice3(
-            [ string('//'), pwhile(not(alt(char('\n'), eos)), any)                    ],
+            [ string('//'), many(notOneOf('\n'))                                      ],
             [ string('/*'), combine(pwhile(not(string('*/')), any), string('*/'), _1) ],
             [ pconst(true), many1(ws)                                                 ]
         )
@@ -204,13 +204,13 @@ const lexString = combine3(
     char('\''),
     many(
         choice(
-            [ char('\\'), choice4(
-                              [ char('n'),    pconst('\n') as StringParser<never, char> ], // TYH
-                              [ char('r'),    pconst('\r') ],
-                              [ char('t'),    pconst('\t') ],
-                              [ pconst(true), any          ],
-                          ) ],
-            [ peek(not(char('\''))), any ]
+            [ char('\\'),   choice4(
+                                [ char('n'),    pconst('\n') as StringParser<never, char> ], // TYH
+                                [ char('r'),    pconst('\r') ],
+                                [ char('t'),    pconst('\t') ],
+                                [ pconst(true), any          ],
+                            ) ],
+            [ pconst(true), notOneOf('\'') ]
         )
     ),
     char('\''),
@@ -312,8 +312,8 @@ const tBinary = inspect(nextToken, t => {
 const lexRange = combine3(
     char('['),
     many(choice(
-        [ char('\n'),           pfail('unterminated_regexp') as StringParser<string, never>     ], // TYH
-        [ peek(not(char(']'))), any ]
+        [ char('\n'),    pfail('unterminated_regexp') as StringParser<string, never> ], // TYH
+        [ pconst(true),  notOneOf(']') ]
     )),
     char(']'),
 
@@ -329,7 +329,7 @@ const tRegExp = cache(combine(
                     [ peek(char('[')),      lexRange                                  ],
                     [ peek(char('\\')),     combine(char('\\'), any, (x, y) => x + y) ],
                     [ char('\n'),           pfail('unterminated_regexp')              ],
-                    [ peek(not(char('/'))), any                                       ]
+                    [ pconst(true),         notOneOf('/')                             ]
                 )
             ),
             char('/'),
