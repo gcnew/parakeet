@@ -1,0 +1,75 @@
+{
+    "kind": "right",
+    "value": [
+        "insensitive",
+        {
+            "source": "InSeNSItiVe",
+            "offset": 11,
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "InSeNSItiVe"
+                    ]
+                ]
+            }
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        "InSeNSItiVe",
+        {
+            "source": "InSeNSItiVe",
+            "offset": 11,
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "InSeNSItiVe"
+                    ]
+                ]
+            }
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        "InSeNSItiVe",
+        {
+            "source": "InSeNSItiVe",
+            "offset": 11,
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "InSeNSItiVe"
+                    ]
+                ]
+            }
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        "not a Number",
+        {
+            "source": "Not a Number",
+            "offset": 12,
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "Not a Number"
+                    ]
+                ]
+            }
+        }
+    ]
+}
