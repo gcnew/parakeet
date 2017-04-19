@@ -14,7 +14,7 @@ export {
 
     genericAlt, genericChoice, genericCombine,
 
-    getData, setData, modifyData,
+    getData, setData, modifyData, withFilter,
 
     /* monadic binds */
     recover, inspect,
@@ -59,6 +59,28 @@ function pair<F extends Literal, S>(fst: F, snd: S): [F, S] {
     return [fst, snd];
 }
 
+function mkFilterStream<S extends ParserStream<any>>(filter: <T>(x: T) => T, st: S): S {
+    const wrapped: S = Object.create(st);
+    wrapped.next = () => {
+        const val = st.next();
+        if (!val) {
+            return val;
+        }
+        return [filter(val[0]), mkFilterStream(filter, val[1])];
+    };
+
+    return wrapped;
+}
+
+function unwrapFilterStream<S extends ParserStream<any>>(st: S): S {
+    const wrapped: S = Object.getPrototypeOf(st);
+    if (!(wrapped.next as any)) {
+        throw new Error('Assert: Unwrapping failed');
+    }
+
+    return wrapped;
+}
+
 function map<M, S extends ParserStream<M>, E, A, B>(p: Parser<M, S, E, A>, f: (a: A) => B): Parser<M, S, E, B> {
     return (st) => {
         const res = p(st);
@@ -78,6 +100,20 @@ function mapError<M, S extends ParserStream<M>, E1, E2, T>(p: Parser<M, S, E1, T
         }
 
         return res;
+    };
+}
+
+function withFilter<M, S extends ParserStream<M>, E, T>(
+    filter: (x: M) => M,
+    p: Parser<M, S, E, T>
+): Parser<M, S, E, T> {
+    return st => {
+        const res = p(mkFilterStream(filter, st));
+        if (res.kind === 'left') {
+            return res;
+        }
+
+        return right(pair(res.value[0], unwrapFilterStream(res.value[1])));
     };
 }
 
