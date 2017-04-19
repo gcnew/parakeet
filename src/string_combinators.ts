@@ -13,7 +13,7 @@ export {
     AsciiAlphaExpected, AsciiIdCharExpected, StringMismatch, CharNotExpected,
     InvalidPosition,
 
-    oneOf, stringChoice, string, token,
+    oneOf, stringChoice, string, stringInsensitive, token,
 
     position, withPosition, posToLineCol, posToLineCol2,
 
@@ -115,6 +115,37 @@ function string<S extends string>(s: S): StringParser<StringMismatch|EosReached,
         }
 
         return right(pair(s, cur));
+    };
+}
+
+function stringInsensitive(s: string): StringParser<StringMismatch|EosReached, string> {
+    if (!s.length) {
+        throw new Error('Empty string');
+    }
+
+    const errorData: StringMismatch = { kind: 'pc_error', code: 'string_mismatch', expected: s };
+    const error = left(errorData);
+
+    return (st) => {
+        let cur = st;
+        let acc = '';
+
+        for (let i = 0; i < s.length; ++i) {
+            const next = cur.next();
+
+            if (!next) {
+                return eosReached;
+            }
+
+            if (next[0].toLowerCase() !== s[i].toLowerCase()) {
+                return error;
+            }
+
+            cur = next[1];
+            acc += next[0];
+        }
+
+        return right(pair(acc, cur));
     };
 }
 
