@@ -1,4 +1,4 @@
-export { Parser, ParserStream, EosReached, EosExpected, map, mapError, many, oneOrMore, separated, separatedZero, pwhile, peek, maybe, trai, satisfy, any, eos, not, terminated, pconst, pfail, genericAlt, genericChoice, genericCombine, getData, setData, modifyData, recover, inspect, Left, Right, Either, Literal, Any, left, right, pair };
+export { Parser, ParserStream, EosReached, EosExpected, map, mapError, many, oneOrMore, separated, separatedZero, pwhile, peek, maybe, trai, satisfy, any, eos, not, terminated, pconst, pfail, genericAlt, genericChoice, genericCombine, getData, setData, modifyData, withFilter, recover, inspect, Left, Right, Either, Literal, Any, left, right, pair };
 declare type Any = {} | undefined | null;
 declare type Left<L> = {
     kind: 'left';
@@ -29,6 +29,7 @@ declare function right<R>(value: R): Right<R>;
 declare function pair<F extends Literal, S>(fst: F, snd: S): [F, S];
 declare function map<M, S extends ParserStream<M>, E, A, B>(p: Parser<M, S, E, A>, f: (a: A) => B): Parser<M, S, E, B>;
 declare function mapError<M, S extends ParserStream<M>, E1, E2, T>(p: Parser<M, S, E1, T>, f: (e: E1) => E2): Parser<M, S, E2, T>;
+declare function withFilter<M, S extends ParserStream<M>, E, T>(filter: (x: M) => M, p: Parser<M, S, E, T>): Parser<M, S, E, T>;
 declare function any<M, S extends ParserStream<M>>(st: S): Either<EosReached, [M, S]>;
 declare function eos<S extends ParserStream<Any>>(st: S): Either<EosExpected, [undefined, S]>;
 declare function terminated<M, S extends ParserStream<M>, E, T>(p: Parser<M, S, E, T>): Parser<M, S, EosExpected | E, T>;

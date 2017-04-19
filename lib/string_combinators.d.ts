@@ -1,6 +1,6 @@
 import { Parser } from './parser_combinators';
 import { ParserStream, Either, EosReached } from './parser_combinators';
-export { TextStream, StringParser, LineOffsetTable, WithPosition, WithLineCol, StringParserError, DigitExpected, WhitespaceExpected, UnderscoreExpected, AsciiAlphaExpected, AsciiIdCharExpected, StringMismatch, CharNotExpected, InvalidPosition, oneOf, stringChoice, string, token, position, withPosition, posToLineCol, posToLineCol2, parseLineOffsets, getLineCol };
+export { TextStream, StringParser, LineOffsetTable, WithPosition, WithLineCol, StringParserError, DigitExpected, WhitespaceExpected, UnderscoreExpected, AsciiAlphaExpected, AsciiIdCharExpected, StringMismatch, CharNotExpected, InvalidPosition, oneOf, notOneOf, stringChoice, string, stringInsensitive, token, position, withPosition, posToLineCol, posToLineCol2, parseLineOffsets, getLineCol };
 export declare type char = string;
 interface TextStream extends ParserStream<char> {
     getPosition(this: this): number;
@@ -90,7 +90,9 @@ export declare const number: Parser<string, TextStream, EosReached | {
     code: "digit_expected";
 }, string>;
 declare function string<S extends string>(s: S): StringParser<StringMismatch | EosReached, S>;
+declare function stringInsensitive(s: string): StringParser<StringMismatch | EosReached, string>;
 declare function oneOf(s: string): StringParser<CharNotExpected | EosReached, char>;
+declare function notOneOf(s: string): StringParser<CharNotExpected | EosReached, char>;
 declare function stringChoice<E, T>(map: {
     [key: string]: StringParser<E, T>;
 }): StringParser<E | StringMismatch | EosReached, T>;
