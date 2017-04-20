@@ -2,13 +2,13 @@
 import { test } from '../test_util'
 
 import {
-    string, number, ws,
+    char, string, number, ws,
 
     withPosition, getLineCol
 } from '../../src/string_combinators'
 
 import {
-    map, many, combine, choice,
+    map, many, combine, choice, separatedTrailing, separatedZeroTrailing,
 
     left, right, pair
 } from '../../src/parser_combinators'
@@ -41,8 +41,23 @@ const wp = (st: any) => {
     return right(pair(retval, result.value[1]));
 }
 
+const numList  = separatedTrailing(number, char(','));
+const numList2 = separatedZeroTrailing(number, char(','));
+
 test(ll, 'strhello');
 test(ll, 'strhello world');
 test(nn, '123abc');
 test(wp, '\n\n123');
 test(wp, '\n\n   hello?');
+
+test(numList, '');
+test(numList, '1');
+test(numList, '1,');
+test(numList, '1,2,3');
+test(numList, '1,2,3,');
+
+test(numList2, '');
+test(numList2, '1');
+test(numList2, '1,');
+test(numList2, '1,2,3');
+test(numList2, '1,2,3,');

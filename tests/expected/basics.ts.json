@@ -97,3 +97,206 @@
         }
     }
 }
+
+{
+    "kind": "left",
+    "value": {
+        "kind": "pc_error",
+        "code": "eos_reached"
+    }
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            "1"
+        ],
+        {
+            "source": "1",
+            "offset": 1,
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "1"
+                    ]
+                ]
+            }
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            "1"
+        ],
+        {
+            "source": "1,",
+            "offset": 2,
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "1,"
+                    ]
+                ]
+            }
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            "1",
+            "2",
+            "3"
+        ],
+        {
+            "source": "1,2,3",
+            "offset": 5,
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "1,2,3"
+                    ]
+                ]
+            }
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            "1",
+            "2",
+            "3"
+        ],
+        {
+            "source": "1,2,3,",
+            "offset": 6,
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "1,2,3,"
+                    ]
+                ]
+            }
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [],
+        {
+            "source": "",
+            "offset": 0,
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        ""
+                    ]
+                ]
+            }
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            "1"
+        ],
+        {
+            "source": "1",
+            "offset": 1,
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "1"
+                    ]
+                ]
+            }
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            "1"
+        ],
+        {
+            "source": "1,",
+            "offset": 2,
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "1,"
+                    ]
+                ]
+            }
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            "1",
+            "2",
+            "3"
+        ],
+        {
+            "source": "1,2,3",
+            "offset": 5,
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "1,2,3"
+                    ]
+                ]
+            }
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            "1",
+            "2",
+            "3"
+        ],
+        {
+            "source": "1,2,3,",
+            "offset": 6,
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "1,2,3,"
+                    ]
+                ]
+            }
+        }
+    ]
+}

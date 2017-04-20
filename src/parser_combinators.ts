@@ -6,7 +6,9 @@ export {
     /* combinators */
     map, mapError,
 
-    many, oneOrMore, separated, separatedZero, pwhile,
+    many, oneOrMore, pwhile,
+
+    separated, separatedZero, separatedTrailing, separatedZeroTrailing,
 
     peek, maybe, trai, satisfy,
 
@@ -328,6 +330,33 @@ function separatedZero<M, S extends ParserStream<M>, E, T>(
     return map(
         trai(p, pwhile(sep, p), (x, xs) => (xs.unshift(x), xs)),
         res => res || []
+    );
+}
+
+function separatedTrailing<M, S extends ParserStream<M>, E, T>(
+    p: Parser<M, S, E, T>,
+    sep: Parser<M, S, Any, Any>
+): Parser<M, S, E, T[]> {
+    return combine(
+        p,
+        trai(
+            sep,
+            separatedZeroTrailing(p, sep),
+            _2
+        ),
+
+        (x, xs) => xs ? (xs.unshift(x), xs) : [x]
+    );
+}
+
+function separatedZeroTrailing<M, S extends ParserStream<M>, E, T>(
+    p: Parser<M, S, E, T>,
+    sep: Parser<M, S, Any, Any>
+): Parser<M, S, E, T[]> {
+    return combine(
+        many(combine(p, sep, _1)),
+        maybe(p),
+        (xs, x) => (x && xs.push(x), xs)
     );
 }
 
