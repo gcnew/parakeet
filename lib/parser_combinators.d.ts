@@ -1,4 +1,4 @@
-export { Parser, ParserStream, EosReached, EosExpected, map, mapError, many, oneOrMore, separated, separatedZero, pwhile, peek, maybe, trai, satisfy, any, eos, not, terminated, pconst, pfail, forward, genericAlt, genericChoice, genericCombine, getData, setData, modifyData, withFilter, recover, inspect, Left, Right, Either, Literal, Any, left, right, pair, _1, _2, _3, _4, tagged };
+export { Parser, ParserStream, EosReached, EosExpected, map, mapError, many, oneOrMore, pwhile, separated, separatedZero, separatedTrailing, separatedZeroTrailing, peek, maybe, trai, satisfy, any, eos, not, terminated, pconst, pfail, forward, genericAlt, genericChoice, genericCombine, getData, setData, modifyData, withFilter, recover, inspect, Left, Right, Either, Literal, Any, left, right, pair, _1, _2, _3, _4, tagged };
 declare type Any = {} | undefined | null;
 declare type Left<L> = {
     kind: 'left';
@@ -60,6 +60,8 @@ declare function pwhile<M, S extends ParserStream<M>, E, T>(cond: Parser<M, S, A
 declare function oneOrMore<M, S extends ParserStream<M>, E, A>(p: Parser<M, S, E, A>): Parser<M, S, E, A[]>;
 declare function separated<M, S extends ParserStream<M>, E, T>(p: Parser<M, S, E, T>, sep: Parser<M, S, Any, Any>): Parser<M, S, E, T[]>;
 declare function separatedZero<M, S extends ParserStream<M>, E, T>(p: Parser<M, S, E, T>, sep: Parser<M, S, Any, Any>): Parser<M, S, E, T[]>;
+declare function separatedTrailing<M, S extends ParserStream<M>, E, T>(p: Parser<M, S, E, T>, sep: Parser<M, S, Any, Any>): Parser<M, S, E, T[]>;
+declare function separatedZeroTrailing<M, S extends ParserStream<M>, E, T>(p: Parser<M, S, E, T>, sep: Parser<M, S, Any, Any>): Parser<M, S, E, T[]>;
 declare function peek<M, S extends ParserStream<M>, E, T>(p1: Parser<M, S, E, T>): Parser<M, S, E, T>;
 declare function maybe<M, S extends ParserStream<M>, A>(p1: Parser<M, S, Any, A>): Parser<M, S, never, A | undefined>;
 declare function trai<M, S extends ParserStream<M>, E1, E2, A, B, C>(p1: Parser<M, S, E1, A>, p2: Parser<M, S, E2, B>, f: (a: A, b: B) => C): Parser<M, S, E2, C | undefined>;
