@@ -1,4 +1,4 @@
-export { Parser, ParserStream, EosReached, EosExpected, map, mapError, many, oneOrMore, separated, separatedZero, pwhile, peek, maybe, trai, satisfy, any, eos, not, terminated, pconst, pfail, genericAlt, genericChoice, genericCombine, getData, setData, modifyData, withFilter, recover, inspect, Left, Right, Either, Literal, Any, left, right, pair };
+export { Parser, ParserStream, EosReached, EosExpected, map, mapError, many, oneOrMore, separated, separatedZero, pwhile, peek, maybe, trai, satisfy, any, eos, not, terminated, pconst, pfail, forward, genericAlt, genericChoice, genericCombine, getData, setData, modifyData, withFilter, recover, inspect, Left, Right, Either, Literal, Any, left, right, pair, _1, _2, _3, _4, tagged };
 declare type Any = {} | undefined | null;
 declare type Left<L> = {
     kind: 'left';
@@ -27,12 +27,21 @@ declare type EosExpected = {
 declare function left<L>(value: L): Left<L>;
 declare function right<R>(value: R): Right<R>;
 declare function pair<F extends Literal, S>(fst: F, snd: S): [F, S];
+declare function _1<T>(x: T): T;
+declare function _2<T>(_: any, x: T): T;
+declare function _3<T>(_1: any, _2: any, x: T): T;
+declare function _4<T>(_1: any, _2: any, _3: any, x: T): T;
+declare function tagged<T extends string, V>(tag: T, value: V): {
+    tag: T;
+    value: V;
+};
 declare function map<M, S extends ParserStream<M>, E, A, B>(p: Parser<M, S, E, A>, f: (a: A) => B): Parser<M, S, E, B>;
 declare function mapError<M, S extends ParserStream<M>, E1, E2, T>(p: Parser<M, S, E1, T>, f: (e: E1) => E2): Parser<M, S, E2, T>;
 declare function withFilter<M, S extends ParserStream<M>, E, T>(filter: (x: M) => M, p: Parser<M, S, E, T>): Parser<M, S, E, T>;
 declare function any<M, S extends ParserStream<M>>(st: S): Either<EosReached, [M, S]>;
 declare function eos<S extends ParserStream<Any>>(st: S): Either<EosExpected, [undefined, S]>;
 declare function terminated<M, S extends ParserStream<M>, E, T>(p: Parser<M, S, E, T>): Parser<M, S, EosExpected | E, T>;
+declare function forward<M, S extends ParserStream<M>, E, T>(f: () => Parser<M, S, E, T>): Parser<M, S, E, T>;
 declare function pconst<T extends Literal>(x: T): <S>(st: S) => Either<never, [T, S]>;
 declare function pfail<E extends Literal>(e: E): <S>(_: S) => Either<E, never>;
 declare function not<M, S extends ParserStream<M>, E, T>(p: Parser<M, S, E, T>): Parser<M, S, T, E>;
