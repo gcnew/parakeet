@@ -4,7 +4,7 @@ import { test } from '../test_util'
 import * as C from '../../src/cache'
 
 import {
-    StringParser, TextStream,
+    StringParser,
 
     char, anyChar as any, string, number, digit, ws, asciiId, oneOf, notOneOf, token,
 
@@ -19,7 +19,7 @@ import {
     map, recover, pwhile, not, eos, many, peek, maybe, trai, pconst, pfail, inspect, separatedZero,
     alt, alt3, alt4, combine, combine3, combine4, choice, choice3, choice4, choice6, choice7,
 
-    getData,
+    getData, forward,
 
     oneOrMore as many1
 } from '../../src/parser_combinators'
@@ -372,12 +372,12 @@ const parseExpr: StringParser<
     LexError|ExpectedFound,
     Expr
 > = combine(
-    (st: TextStream) => parseTernary(st),
+    forward(() => parseTernary),
     many(
         choice3(
-            [ peek(expect('(')), map((st: TextStream) => parseCallArgs(st), x => tagged('call', x))   ],
-            [       expect('.'), map(                    accept('t_id'),    x => tagged('member', x)) ],
-            [ peek(expect('[')), map((st: TextStream) => parseIndex(st),    x => tagged('index', x))  ]
+            [ peek(expect('(')), map(forward(() => parseCallArgs), x => tagged('call', x))   ],
+            [       expect('.'), map(              accept('t_id'), x => tagged('member', x)) ],
+            [ peek(expect('[')), map(forward(() => parseIndex),    x => tagged('index', x))  ]
         )
     ),
 
@@ -394,12 +394,12 @@ const parseStatement: StringParser<
     Statement
 > = combine(
     choice6(
-        [ expect('const'),     st => parseConstDecl(st)          ],
-        [ expect('if'),        st => parseIf(st)                 ],
-        [ expect('function'),  st => parseFunctionDecl(st)       ],
+        [ expect('const'),     forward(() => parseConstDecl)     ],
+        [ expect('if'),        forward(() => parseIf)            ],
+        [ expect('function'),  forward(() => parseFunctionDecl)  ],
         [ expect('return'),    map(parseExpr, mkReturnStatement) ],
 
-        [ peek(expect('{')),   st => parseBlock(st)              ],
+        [ peek(expect('{')),   forward(() => parseBlock)         ],
 
         [ pconst(true),        map(parseExpr, mkExprStatement)   ]
     ),

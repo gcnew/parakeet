@@ -13,6 +13,7 @@ import {
     EosReached,
 
     map, mapError, alt3, many, maybe, pconst, combine, combine3, combine4, terminated,
+    forward,
 
     oneOrMore as many1
 } from '../../src/parser_combinators'
@@ -74,9 +75,9 @@ const parseArithOp = stringChoice({
 
 // FunctionDecl = Id (' ' Id)* '=' Expr ';'
 const parseFunctionDecl = combine4(
-    asciiId,                                                                              // name
-    many(combine(parseWs, asciiId, (_, id) => id)),                                       // params
-    combine4(skipWs, char('='), skipWs, st => parseExpr(st), (_1, _2, _3, body) => body), // body
+    asciiId,                                                                                   // name
+    many(combine(parseWs, asciiId, (_, id) => id)),                                            // params
+    combine4(skipWs, char('='), skipWs, forward(() => parseExpr), (_1, _2, _3, body) => body), // body
 
     mapError(combine(skipWs, char(';'), x => x), _ => ({ kind: 'pc_error' as 'pc_error', message: 'Did you forget `;` ?' })),
 
@@ -91,7 +92,7 @@ const parseAtom = alt3(
     parseVar,
     combine3(
         combine(char('('), skipWs, _ => _),
-        st => parseExpr(st),
+        forward(() => parseExpr),
         combine(skipWs, char(')'), _ => _),
         (_, expr) => expr
     )
@@ -113,7 +114,7 @@ const parseArith: StringParser<StringMismatch | EosReached, Expr> = combine3(
     maybe(combine3(
         parseArithOp,
         skipWs,
-        st => parseArith(st),
+        forward(() => parseArith),
         (op, _, right) => ({ op, right })
     )),
 

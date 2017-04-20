@@ -10,7 +10,7 @@ export {
 
     peek, maybe, trai, satisfy,
 
-    any, eos, not, terminated, pconst, pfail,
+    any, eos, not, terminated, pconst, pfail, forward,
 
     genericAlt, genericChoice, genericCombine,
 
@@ -141,6 +141,10 @@ function eos<S extends ParserStream<Any>>(st: S): Either<EosExpected, [undefined
 
 function terminated<M, S extends ParserStream<M>, E, T>(p: Parser<M, S, E, T>) {
     return combine(p, eos, x => x);
+}
+
+function forward<M, S extends ParserStream<M>, E, T>(f: () => Parser<M, S, E, T>): Parser<M, S, E, T> {
+    return (st) => f()(st);
 }
 
 function pconst<T extends Literal>(x: T) {

@@ -12,7 +12,7 @@ import {
 import {
     EosReached,
 
-    map, alt, alt3, many, combine, combine3, combine4, terminated,
+    map, alt, alt3, many, combine, combine3, combine4, terminated, forward,
 
     satisfy as psat,
     oneOrMore as many1
@@ -66,7 +66,7 @@ const parseLambda = combine4(
     char('λ'),
     parseId,
     char('.'),
-    st => parseExpr(st),
+    forward(() => parseExpr),
     (_1, param, _2, body) => lambda(param, body)
 );
 
@@ -76,7 +76,7 @@ const parseLambda = combine4(
 const parseExprNoAp = alt3(
     map(parseNum, n   => literal(+n.join(''))),
     map(parseId,  ref => reference(ref)),
-    combine3(char('('), st => parseExpr(st), char(')'), (_1, e, _2) => e)
+    combine3(char('('), forward(() => parseExpr), char(')'), (_1, e, _2) => e)
 );
 
 // Expr = Lambda
