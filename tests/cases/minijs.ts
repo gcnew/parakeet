@@ -14,7 +14,7 @@ import {
 import {
     EosExpected, Any,
 
-    pair,
+    pair, _1, _2, tagged,
 
     map, recover, pwhile, not, eos, many, peek, maybe, trai, pconst, pfail, inspect, separatedZero,
     alt, alt3, alt4, combine, combine3, combine4, choice, choice3, choice4, choice6, choice7,
@@ -681,18 +681,6 @@ const parseProgramPrettyErrors = recover(
 );
 
 /* Helper functions */
-
-function _1<T>(x: T) {
-    return x;
-}
-
-function _2<T>(_: any, x: T) {
-    return x;
-}
-
-function tagged<T extends string, V>(tag: T, value: V) {
-    return { tag, value };
-}
 
 function assertNever(x: never): never {
     throw new Error(`ASSERT: never expected: ${x}`);

@@ -23,7 +23,8 @@ export {
     Left, Right, Either, Literal, Any,
 
     /* helpers */
-    left, right, pair
+    left, right, pair,
+    _1, _2, _3, _4, tagged
 }
 
 type Any = {} | undefined | null
@@ -57,6 +58,26 @@ function right<R>(value: R): Right<R> {
 
 function pair<F extends Literal, S>(fst: F, snd: S): [F, S] {
     return [fst, snd];
+}
+
+function _1<T>(x: T) {
+    return x;
+}
+
+function _2<T>(_: any, x: T) {
+    return x;
+}
+
+function _3<T>(_1: any, _2: any, x: T) {
+    return x;
+}
+
+function _4<T>(_1: any, _2: any, _3: any, x: T) {
+    return x;
+}
+
+function tagged<T extends string, V>(tag: T, value: V) {
+    return { tag, value };
 }
 
 function mkFilterStream<S extends ParserStream<any>>(filter: <T>(x: T) => T, st: S): S {
