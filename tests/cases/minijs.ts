@@ -371,23 +371,7 @@ function accept(kind: Token['kind']) {
 const parseExpr: StringParser<
     LexError|ExpectedFound,
     Expr
-> = combine(
-    forward(() => parseTernary),
-    many(
-        choice3(
-            [ peek(expect('(')), map(forward(() => parseCallArgs), x => tagged('call', x))   ],
-            [       expect('.'), map(              accept('t_id'), x => tagged('member', x)) ],
-            [ peek(expect('[')), map(forward(() => parseIndex),    x => tagged('index', x))  ]
-        )
-    ),
-
-    (prim, xs) => xs.reduce(
-                      (e, p) => p.tag === 'call'   ? mkCallExpr(e, p.value)         :
-                                p.tag === 'member' ? mkMemberExpr(e, p.value.value) :
-                                p.tag === 'index'  ? mkIndexExpr(e, p.value)        : assertNever(p),
-                      prim
-                  )
-);
+> = forward(() => parseTernary);
 
 const parseStatement: StringParser<
     LexError|ExpectedFound,
@@ -559,9 +543,27 @@ const parsePrimary = choice7(
                                  ) ]
 );
 
+const parseCallMember = combine(
+    parsePrimary,
+    many(
+        choice3(
+            [ peek(expect('(')), map(forward(() => parseCallArgs), x => tagged('call', x))   ],
+            [       expect('.'), map(              accept('t_id'), x => tagged('member', x)) ],
+            [ peek(expect('[')), map(forward(() => parseIndex),    x => tagged('index', x))  ]
+        )
+    ),
+
+    (prim, xs) => xs.reduce(
+                      (e, p) => p.tag === 'call'   ? mkCallExpr(e, p.value)         :
+                                p.tag === 'member' ? mkMemberExpr(e, p.value.value) :
+                                p.tag === 'index'  ? mkIndexExpr(e, p.value)        : assertNever(p),
+                      prim
+                  )
+);
+
 const parseUnary = combine(
     many(tUnary),
-    parsePrimary,
+    parseCallMember,
 
     (ops, expr) => ops.reduceRight((expr, op) => mkUnary(op.value, expr), expr)
 );
@@ -749,6 +751,7 @@ test(parseProgram, `({ key: 'value', 'prop': 5 })`);
 test(parseProgram, `const x = [1, 2, 3]; x[5];`);
 test(parseProgram, `1 + 2 + 3 * 4;`);
 test(parseProgram, `- !-1 || 3 && 1 + 2`);
+test(parseProgram, `-test.prop`);
 
 test(parseProgram, `true ? 1 : 2`);
 test(parseProgram, `a || b ? a ? 1 * 2 : 'hello' : b ? f(10) : o.p`);

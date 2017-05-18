@@ -5338,6 +5338,121 @@
             {
                 "kind": "expr_statement",
                 "expr": {
+                    "kind": "unary_expr",
+                    "op": "-",
+                    "expr": {
+                        "kind": "member_expr",
+                        "obj": {
+                            "kind": "var_expr",
+                            "name": "test"
+                        },
+                        "prop": "prop"
+                    }
+                }
+            }
+        ],
+        {
+            "source": "-test.prop",
+            "offset": 10,
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "-test.prop"
+                    ]
+                ],
+                "$cache": {
+                    "0": {
+                        "value": {
+                            "kind": "right",
+                            "value": [
+                                {
+                                    "kind": "t_operator",
+                                    "value": "-",
+                                    "start": 0,
+                                    "end": 1
+                                },
+                                {
+                                    "source": "-test.prop",
+                                    "offset": 1,
+                                    "data": "Cycle(root.value[1].data.$cache[\"0\"].value.value[1].data)"
+                                }
+                            ]
+                        }
+                    },
+                    "1": {
+                        "value": {
+                            "kind": "right",
+                            "value": [
+                                {
+                                    "kind": "t_id",
+                                    "value": "test",
+                                    "start": 1,
+                                    "end": 5
+                                },
+                                {
+                                    "source": "-test.prop",
+                                    "offset": 5,
+                                    "data": "Cycle(root.value[1].data.$cache[1].value.value[1].data)"
+                                }
+                            ]
+                        }
+                    },
+                    "5": {
+                        "value": {
+                            "kind": "right",
+                            "value": [
+                                {
+                                    "kind": "t_operator",
+                                    "value": ".",
+                                    "start": 5,
+                                    "end": 6
+                                },
+                                {
+                                    "source": "-test.prop",
+                                    "offset": 6,
+                                    "data": "Cycle(root.value[1].data.$cache[5].value.value[1].data)"
+                                }
+                            ]
+                        }
+                    },
+                    "6": {
+                        "value": {
+                            "kind": "right",
+                            "value": [
+                                {
+                                    "kind": "t_id",
+                                    "value": "prop",
+                                    "start": 6,
+                                    "end": 10
+                                },
+                                "Cycle(root.value[1].data.$cache[6].value.value[1])"
+                            ]
+                        }
+                    },
+                    "10": {
+                        "value": {
+                            "kind": "left",
+                            "value": {
+                                "kind": "lex_error",
+                                "message": "eos_reached",
+                                "position": 10
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
+
+{
+    "kind": "right",
+    "value": [
+        [
+            {
+                "kind": "expr_statement",
+                "expr": {
                     "kind": "ternary_expr",
                     "cond": {
                         "kind": "bool_expr",
