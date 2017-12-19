@@ -26,7 +26,7 @@ function generateCombine(n) {
     ${times(n, x => `p${x}: Parser<M, S, E${x}, T${x}>`).join(',\n    ')},
     f: (${times(n, x => `a${x}: T${x}`).join(', ')}) => ${'T'+(n+1)}
 ): Parser<M, S, ${times(n, x => 'E'+x).join('|')}, ${'T'+(n+1)}> {
-    return genericCombine<M, S, ${times(n, x => 'E'+x).join('|')}, ${times(n, x => 'T'+x).join('|')}, ${'T'+(n+1)}>([${times(n, x => 'p'+x).join(', ')}], f);
+    return genericCombine<M, S, ${times(n, x => 'E'+x).join('|')}, any, ${'T'+(n+1)}>([${times(n, x => 'p'+x).join(', ')}], f);
 }`
 );
 }

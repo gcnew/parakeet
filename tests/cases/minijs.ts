@@ -268,7 +268,7 @@ const nextToken = cache(
                 [ peek(char('\'')), lex2token(lexString, 't_string', 'unterminated_string') ],
                 [ pconst(true),     token(
                                         inspect(any, _ => pfail(false)),
-                                        (x: never) => x,
+                                        boom,
                                         (e, position): LexError => ({
                                             kind: 'lex_error',
                                             message: e ? 'eos_reached': 'unexpected_character',
@@ -692,6 +692,10 @@ function assert(cond: boolean, msg?: string) {
     if (!cond) {
         throw new Error(msg || 'Assertion failed!');
     }
+}
+
+function boom(): never {
+    throw new Error(`boom called`);
 }
 
 test(parseProgram,
