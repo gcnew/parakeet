@@ -36,7 +36,7 @@ interface Right<R> { kind: 'right', value: R }
 
 type Either<L, R> = Left<L> | Right<R>
 
-type Literal = boolean | string | number | null | undefined | object;
+type Literal = boolean | string | number | null | undefined | {};
 
 interface ParserStream<S> {
     getData(): any;
