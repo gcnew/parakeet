@@ -20,7 +20,7 @@
     "types": "./lib/index.d.ts",
 
     "files": [
-        "lib", "src", "tools", "tsconfig.json", "tsconfig.lib.json"
+        "lib"
     ],
 
     "devDependencies": {
