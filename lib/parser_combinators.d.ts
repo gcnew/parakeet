@@ -1,29 +1,31 @@
 export { Parser, ParserStream, EosReached, EosExpected, map, mapError, many, oneOrMore, pwhile, separated, separatedZero, separatedTrailing, separatedZeroTrailing, peek, maybe, trai, satisfy, any, eos, not, terminated, pconst, pfail, forward, genericAlt, genericChoice, genericCombine, getData, setData, modifyData, withFilter, recover, inspect, Left, Right, Either, Literal, Any, left, right, pair, _1, _2, _3, _4, tagged };
 declare type Any = {} | undefined | null;
-declare type Left<L> = {
+interface Left<L> {
     kind: 'left';
     value: L;
-};
-declare type Right<R> = {
+}
+interface Right<R> {
     kind: 'right';
     value: R;
-};
+}
 declare type Either<L, R> = Left<L> | Right<R>;
-declare type Literal = boolean | string | number | null | undefined | object;
+declare type Literal = boolean | string | number | null | undefined | {};
 interface ParserStream<S> {
     getData(): any;
     setData(data: any): this;
     next(this: this): [S, this] | null;
 }
-declare type Parser<M, S extends ParserStream<M>, E, T> = (st: S) => Either<E, [T, S]>;
-declare type EosReached = {
+interface Parser<M, S extends ParserStream<M>, E, T> {
+    (st: S): Either<E, [T, S]>;
+}
+interface EosReached {
     kind: 'pc_error';
     code: 'eos_reached';
-};
-declare type EosExpected = {
+}
+interface EosExpected {
     kind: 'pc_error';
     code: 'eos_expected';
-};
+}
 declare function left<L>(value: L): Left<L>;
 declare function right<R>(value: R): Right<R>;
 declare function pair<F extends Literal, S>(fst: F, snd: S): [F, S];
