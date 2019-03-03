@@ -28,8 +28,9 @@
     },
 
     "scripts": {
+        "generate":      "node tools/generator.js",
         "test-no-build": "node tests/runner.js",
-        "test":          "tsc && npm run test-no-build",
+        "test":          "npm run generate && tsc && npm run test-no-build",
 
         "accept":        "rm -rf tests/expected/ && mv tests/actual/ tests/expected",
 

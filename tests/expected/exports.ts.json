@@ -1,0 +1,21 @@
+{
+    "kind": "right",
+    "value": [
+        {
+            "chr": "s",
+            "num": 10
+        },
+        {
+            "source": "s 10",
+            "offset": 4,
+            "data": {
+                "lineOffsetTable": [
+                    [
+                        0,
+                        "s 10"
+                    ]
+                ]
+            }
+        }
+    ]
+}

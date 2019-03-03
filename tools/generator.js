@@ -12,7 +12,7 @@ function times(n, f, s = 1) {
 function generateAlt(n) {
     return (
 `export function alt${n}<M, S extends ParserStream<M>, E, ${times(n, x => 'T'+x).join(', ')}>(
-    ${times(n-1, x => `p${x}: Parser<M, S, Any, T${x}>`).join(',\n    ')},
+    ${times(n-1, x => `p${x}: Parser<M, S, unknown, T${x}>`).join(',\n    ')},
     p${n}: Parser<M, S, E, T${n}>
 ): Parser<M, S, E, ${times(n, x => 'T'+x).join('|')}> {
     return genericAlt<M, S, any, ${times(n, x => 'T'+x).join('|')}>([${times(n, x => 'p'+x).join(', ')}]);
@@ -34,8 +34,8 @@ function generateCombine(n) {
 function generateChoice(n) {
     return (
 `export function choice${n}<M, S extends ParserStream<M>, ${times(n+1, x => 'E'+x).join(', ')}, ${times(n, x => 'T'+x).join(', ')}>(
-    ${times(n-1, x => `p${x}: [Parser<M, S, Any, Any>, Parser<M, S, E${x}, T${x}>]`).join(',\n    ')},
-    p${n}: [Parser<M, S, E${n+1}, Any>, Parser<M, S, E${n}, T${n}>]
+    ${times(n-1, x => `p${x}: [Parser<M, S, unknown, unknown>, Parser<M, S, E${x}, T${x}>]`).join(',\n    ')},
+    p${n}: [Parser<M, S, E${n+1}, unknown>, Parser<M, S, E${n}, T${n}>]
 ): Parser<M, S, ${times(n+1, x => 'E'+x).join('|')}, ${times(n, x => 'T'+x).join('|')}> {
     return genericChoice<M, S, any, ${times(n, x => 'E'+x).join('|')}, ${times(n, x => 'T'+x).join('|')}>([${times(n, x => 'p'+x).join(', ')}]);
 }`
@@ -43,6 +43,88 @@ function generateChoice(n) {
 }
 
 const OVERLOAD_COUNT = 8;
+const PRELUDE = `
+import { Parser, ParserStream } from './parser_combinators'
+
+export function genericCombine<M, S extends ParserStream<M>, E, A, B>(
+    parsers: Parser<M, S, E, A>[],
+    f: (...values: A[]) => B
+): Parser<M, S, E, B> {
+    if (!parsers.length) {
+        throw new Error('No parsers provided');
+    }
+    if (!parsers.every(x => typeof x === 'function')) {
+        throw new Error('Empty parser!');
+    }
+
+    return (st) => {
+        let cur = st;
+        const results: any[] = [];
+
+        for (const p of parsers) {
+            const res = p(cur);
+            if (res.kind === 'left') {
+                return res;
+            }
+
+            cur = res.value[1];
+            results.push(res.value[0]);
+        }
+
+        return { kind: 'right', value: [ f(...results), cur ] };
+    };
+}
+
+export function genericAlt<M, S extends ParserStream<M>, E, T>(parsers: Parser<M, S, E, T>[]): Parser<M, S, E, T> {
+    if (!parsers.length) {
+        throw new Error('No parsers provided');
+    }
+    if (!parsers.every(x => typeof x === 'function')) {
+        throw new Error('Empty parser!');
+    }
+
+    return (st) => {
+        let err = undefined;
+        for (const p of parsers) {
+            const res = p(st);
+            if (res.kind !== 'left') {
+                return res;
+            }
+
+            err = res;
+        }
+
+        return err!;
+    };
+}
+
+export function genericChoice<M, S extends ParserStream<M>, E1, E2, T>(
+    parsers: [Parser<M, S, E1, unknown>, Parser<M, S, E2, T>][]
+): Parser<M, S, E1|E2, T> {
+    if (!parsers.length) {
+        throw new Error('No parsers provided');
+    }
+    if (!parsers.every(x => typeof x[0] === 'function' && typeof x[1] === 'function')) {
+        throw new Error('Empty parser!');
+    }
+
+    return (st) => {
+        let ret = undefined;
+        for (const pair of parsers) {
+            const res = pair[0](st);
+
+            if (res.kind === 'right') {
+                return pair[1](res.value[1]);
+            }
+
+            ret = res;
+        }
+
+        return ret!;
+    };
+}
+
+`;
 
 const code = [ generateAlt, generateCombine, generateChoice ]
     .map(f => times(OVERLOAD_COUNT, f, 2).join('\n\n'))
@@ -51,12 +133,5 @@ const code = [ generateAlt, generateCombine, generateChoice ]
 
 const fs = require('fs');
 
-const srcPath = __dirname + '/../src/parser_combinators.ts'
-const source  = fs.readFileSync(srcPath);
-
-const MARKER = '/* ======= GENERATED ======== */'
-const newSource = source.slice(0, source.indexOf(MARKER) + MARKER.length)
-    + '\n\n' + code + '\n';
-
-// console.log(newSource);
-fs.writeFileSync(srcPath, newSource);
+const outPath = __dirname + '/../src/generated_combinators.ts'
+fs.writeFileSync(outPath, PRELUDE + code + '\n');

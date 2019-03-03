@@ -12,7 +12,7 @@ import {
 } from '../../src/string_combinators'
 
 import {
-    EosExpected, Any,
+    EosExpected,
 
     pair, _1, _2, tagged,
 
@@ -249,7 +249,7 @@ const lexOperator = alt3(
     })
 );
 
-function lex2token(lexer: StringParser<Any, string>, kind: Token['kind'], message: string) {
+function lex2token(lexer: StringParser<unknown, string>, kind: Token['kind'], message: string) {
     return token(
         lexer,
         (value, start, end): Token => ({ kind, value, start, end }),
