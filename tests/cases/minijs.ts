@@ -12,8 +12,6 @@ import {
 } from '../../src/string_combinators'
 
 import {
-    EosExpected,
-
     pair, _1, _2, tagged,
 
     map, recover, pwhile, not, eos, many, peek, maybe, trai, pconst, pfail, inspect, separatedZero,
@@ -205,7 +203,7 @@ const lexString = combine3(
     many(
         choice(
             [ char('\\'),   choice4(
-                                [ char('n'),    pconst('\n') as StringParser<never, char> ], // TYH
+                                [ char('n'),    pconst('\n') ],
                                 [ char('r'),    pconst('\r') ],
                                 [ char('t'),    pconst('\t') ],
                                 [ pconst(true), any          ],
@@ -312,7 +310,7 @@ const tBinary = inspect(nextToken, t => {
 const lexRange = combine3(
     char('['),
     many(choice(
-        [ char('\n'),    pfail('unterminated_regexp') as StringParser<string, never> ], // TYH
+        [ char('\n'),    pfail('unterminated_regexp') ],
         [ pconst(true),  notOneOf(']') ]
     )),
     char(']'),
@@ -650,7 +648,7 @@ const parseTernary = combine(
 const parseProgram = combine(
     skipTrivia,
     pwhile(
-        not(eos as StringParser<EosExpected, never>), // TYH
+        not(eos),
         parseStatement
     ),
 

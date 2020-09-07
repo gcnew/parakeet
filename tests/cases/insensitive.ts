@@ -15,7 +15,7 @@ import {
 
 
 function insensitive(s: string) {
-    return withFilter(x => x.toLowerCase(), string(s.toLowerCase()));
+    return withFilter((x: string) => x.toLowerCase(), string(s.toLowerCase()));
 }
 
 function monadicInsensitive(s: string): StringParser<StringMismatch|EosReached, string> {
